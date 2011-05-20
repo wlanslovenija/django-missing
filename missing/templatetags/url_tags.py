@@ -4,6 +4,9 @@ register = template.Library()
 
 @register.tag
 def fullurl(parser, token):
+    """
+    Wrapper around `django.http.HttpRequest.build_absolute_uri`.
+    """
     args = list(token.split_contents())
 
     if len(args) != 2:
