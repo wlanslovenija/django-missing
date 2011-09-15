@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import unicodedata
 
 from django import template
 from django.template import defaultfilters
@@ -126,8 +127,10 @@ class Downcoder(object):
 
         for lookup in ALL_DOWNCODE_MAPS:
             for c, l in lookup.items():
+                c = unicodedata.normalize('NFC', encoding.force_unicode(c))
+                l = l.encode('ascii', errors='strict')
                 self.map[c] = l
-                chars += encoding.force_unicode(c)
+                chars += c
 
         self.regex = re.compile(ur'[' + chars + ']|[^' + chars + ']+', re.U)
 
@@ -147,14 +150,14 @@ def downcode(value):
     else:
         downcoded = value
 
-    return value
+    return downcoded
 
 def slugify2(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
     and converts spaces to hyphens.
     """
-    import unicodedata
+    value = unicodedata.normalize('NFC', value)
     value = downcode(value)
     value = unicodedata.normalize('NFD', value).encode('ascii', 'ignore')
     value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
