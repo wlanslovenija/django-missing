@@ -128,7 +128,7 @@ class Downcoder(object):
         for lookup in ALL_DOWNCODE_MAPS:
             for c, l in lookup.items():
                 c = unicodedata.normalize('NFC', encoding.force_unicode(c))
-                l = l.encode('ascii', errors='strict')
+                l = l.encode('ascii', 'strict')
                 self.map[c] = l
                 chars += c
 
