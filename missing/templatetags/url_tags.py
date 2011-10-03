@@ -4,24 +4,12 @@ import re
 import unicodedata
 
 from django import template
+from django.conf import settings
 from django.template import defaultfilters
 from django.utils import encoding
 from django.utils import safestring
 
 register = template.Library()
-
-@register.tag
-def fullurl(parser, token):
-    """
-    Wrapper around `django.http.HttpRequest.build_absolute_uri`.
-    """
-    args = list(token.split_contents())
-
-    if len(args) != 2:
-        raise template.TemplateSyntaxError("'%s' tag requires exactly one argument" % args[0])
-
-    url = parser.compile_filter(args[1])
-    return FullUrlNode(url)
 
 class FullUrlNode(template.Node):
     def __init__(self, url):
@@ -29,9 +17,42 @@ class FullUrlNode(template.Node):
 
     def render(self, context):
         try:
-            return context['request'].build_absolute_uri(self.url.resolve(context))
+            location = None
+            if self.url:
+                location = self.url.resolve(context)
+            return context['request'].build_absolute_uri(location)
         except:
-            return u''
+            if settings.TEMPLATE_DEBUG:
+                raise
+            else:
+                return u''
+
+@register.tag
+def fullurl(parser, token):
+    """
+    Builds an absolute (full) URL from the given location and the variables available in the request.
+
+    If no location is specified, the absolute (full) URL is built on ``request.get_full_path()``.
+
+    It is a wrapper around ``django.http.HttpRequest.build_absolute_uri``. It requires ``request`` to be available
+    in the template context (for example, by using ``request.middleware.RequestMiddleware``).
+
+    Samply usage::
+
+        {% url path.to.some_view as the_url %}
+        {% fullurl the_url %}
+    """
+    args = list(token.split_contents())
+
+    if len(args) > 2:
+        raise template.TemplateSyntaxError("'%s' tag requires at most one argument" % args[0])
+
+    if len(args) == 2:
+        url = parser.compile_filter(args[1])
+    else:
+        url = None
+
+    return FullUrlNode(url)
 
 LATIN_MAP = {
     'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE', 'Ç':
@@ -156,12 +177,22 @@ def slugify2(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
     and converts spaces to hyphens.
+
+    It is similar to built-in :filter:`slugify` but it also handles special characters in variety of languages
+    so that they are not simply removed but properly transliterated.
     """
-    value = unicodedata.normalize('NFC', value)
-    value = downcode(value)
-    value = unicodedata.normalize('NFD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
-    return safestring.mark_safe(re.sub('[-\s]+', '-', value))
+    try:
+        value = unicodedata.normalize('NFC', value)
+        value = downcode(value)
+        value = unicodedata.normalize('NFD', value).encode('ascii', 'ignore')
+        value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
+        return safestring.mark_safe(re.sub('[-\s]+', '-', value))
+    except:
+        if settings.TEMPLATE_DEBUG:
+            raise
+        else:
+            return u''
+
 slugify2.is_safe = True
 slugify2 = defaultfilters.stringfilter(slugify2)
 

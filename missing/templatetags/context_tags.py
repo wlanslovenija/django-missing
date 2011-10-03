@@ -1,23 +1,33 @@
 from django import template
+from django.conf import settings
 
 register = template.Library()
 
 class SetContextNode(template.Node):
-    """
-    This class defines renderer which just updates current template context with the rendered output of the block inside tags.
-    """
     def __init__(self, nodelist, variable):
         self.nodelist = nodelist
         self.variable = variable
     
     def render(self, context):
-        context[self.variable] = self.nodelist.render(context)
-        return ''
+        try:
+            context[self.variable] = self.nodelist.render(context)
+        except:
+            if settings.TEMPLATE_DEBUG:
+                raise
+        return u''
 
 @register.tag
 def setcontext(parser, token):
     """
     Sets (updates) current template context with the rendered output of the block inside tags.
+
+    This is useful when some template tag does not support storing its output in the context itself or we need some complex content (like language, user or URL dependent content) multiple times.
+
+    Sample usage::
+
+        {% setcontext as varname %}
+            {% complextag %}
+        {% endsetcontext %}
     """
     nodelist = parser.parse(('endsetcontext',))
     args = list(token.split_contents())
