@@ -26,6 +26,10 @@ def split_list(value, length):
     try:
         value = list(value)
         length = int(length)
+
+        if not length:
+            return
+
         for i in range(int(math.ceil(len(value) / float(length)))):
             yield value[i*length:i*length+length]
     except:
