@@ -3,6 +3,7 @@ syntax: regexp
 /build$
 ^dist$
 ^build$
+^docs/_build$
 syntax: glob
 *.egg-info
 *.pyc

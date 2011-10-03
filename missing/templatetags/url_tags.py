@@ -32,10 +32,10 @@ def fullurl(parser, token):
     """
     Builds an absolute (full) URL from the given location and the variables available in the request.
 
-    If no location is specified, the absolute (full) URL is built on ``request.get_full_path()``.
+    If no location is specified, the absolute (full) URL is built on :py:meth:`django.http.HttpRequest.get_full_path`.
 
-    It is a wrapper around ``django.http.HttpRequest.build_absolute_uri``. It requires ``request`` to be available
-    in the template context (for example, by using ``request.middleware.RequestMiddleware``).
+    It is a wrapper around :py:meth:`django.http.HttpRequest.build_absolute_uri`. It requires ``request`` to be available
+    in the template context (for example, by using ``django.core.context_processors.request`` context processor).
 
     Samply usage::
 
