@@ -33,7 +33,7 @@ def setcontext(parser, token):
     args = list(token.split_contents())
     
     if len(args) != 3 or args[1] != "as":
-        raise TemplateSyntaxError("%r expected format is 'as name'" % args[0])
+        raise template.TemplateSyntaxError("'%s' expected format is 'as name'" % args[0])
     variable = args[2]
     
     parser.delete_first_token()
