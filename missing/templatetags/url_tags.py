@@ -179,7 +179,7 @@ def slugify2(value):
     and converts spaces to hyphens.
 
     It is similar to built-in :filter:`slugify` but it also handles special characters in variety of languages
-    so that they are not simply removed but properly transliterated.
+    so that they are not simply removed but properly transliterated/downcoded.
     """
     try:
         value = unicodedata.normalize('NFC', value)
