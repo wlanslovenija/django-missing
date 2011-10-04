@@ -1,3 +1,4 @@
 from django.db import models
 
-# Create your models here.
+# To load docutils extensions somewhere
+from missing import admindocs
