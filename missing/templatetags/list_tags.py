@@ -37,3 +37,41 @@ def split_list(value, length):
             raise
         else:
             yield []
+
+@register.filter
+def divide_list(value, count):
+    """
+    Divides input list into the given number of sublists.
+    
+    Last sublist can be shorter if input list length is not a multiplier of the given number of sublists.
+
+    Sample usage::
+
+        <tr>
+        {% for column in objects|divide_list:"2" %}
+            <td><ul>
+            {% for obj in column %}
+                <li>{{ obj }}</li>
+            {% endfor %}
+            </ul></td>
+        {% endfor %}
+        </tr>
+    """
+
+    try:
+        value = list(value)
+        count = int(count)
+
+        if not count:
+            yield value
+            return
+
+        new_len = int(1.0 * len(value) / count + 0.5)
+        for i in xrange(0, count-1):
+             yield value[i*new_len:(i+1)*new_len]
+        yield value[count*new_len-new_len:]
+    except:
+        if settings.TEMPLATE_DEBUG:
+            raise
+        else:
+            yield []
