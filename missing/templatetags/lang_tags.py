@@ -17,14 +17,8 @@ def translate(string, lang_code):
         {% translate "Do you understand this?" "de" %}
     """
 
-    try:
-        old_lang = translation.get_language()
-        translation.activate(lang_code)
-        translated = unicode(translation.ugettext(string))
-        translation.activate(old_lang)
-        return translated
-    except:
-        if settings.TEMPLATE_DEBUG:
-            raise
-        else:
-            return u''
+    old_lang = translation.get_language()
+    translation.activate(lang_code)
+    translated = unicode(translation.ugettext(string))
+    translation.activate(old_lang)
+    return translated

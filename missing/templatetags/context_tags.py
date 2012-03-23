@@ -9,11 +9,7 @@ class SetContextNode(template.Node):
         self.variable = variable
     
     def render(self, context):
-        try:
-            context[self.variable] = self.nodelist.render(context)
-        except:
-            if settings.TEMPLATE_DEBUG:
-                raise
+        context[self.variable] = self.nodelist.render(context)
         return u''
 
 @register.tag
