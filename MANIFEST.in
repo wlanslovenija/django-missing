@@ -1,1 +1,1 @@
-recursive-include cmsplugin_blog/static *
+recursive-include missing/static *
