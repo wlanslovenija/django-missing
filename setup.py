@@ -2,9 +2,9 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 
-if __file__ == '__main__':
+if __name__ == '__main__':
     setup(
         name = 'django-missing',
         version = VERSION,
