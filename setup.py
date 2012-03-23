@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 
 setup(
     name = 'django-missing',
@@ -12,7 +12,7 @@ setup(
     author = 'Mitar',
     author_email = 'mitar.django@tnode.com',
     url = 'https://bitbucket.org/mitar/django-missing',
-    license = "GPLv3",
+    license = "AGPLv3",
     packages = find_packages(),
     package_data = {
         'missing' : [
@@ -23,7 +23,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: GNU Affero General Public License v3',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Framework :: Django',
