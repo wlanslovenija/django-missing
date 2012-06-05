@@ -1,1 +1,5 @@
 recursive-include missing/static *
+include docs/Makefile docs/*.py docs/*.rst docs/_ext/*.py
+include COPYING
+include LICENSE
+include *.py *.txt *.rst

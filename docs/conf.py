@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'django-missing'
-copyright = u'2011, Mitar'
+copyright = u'2011-2012, wlan slovenija'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -169,7 +169,7 @@ html_show_copyright = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'django-missingdoc'
+htmlhelp_basename = 'djangomissingdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -184,7 +184,7 @@ htmlhelp_basename = 'django-missingdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'django-missing.tex', u'django-missing Documentation',
-   u'Mitar', 'manual'),
+   u'wlan slovenija', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,7 +217,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'django-missing', u'django-missing Documentation',
-     [u'Mitar'], 1)
+     [u'wlan slovenija'], 1)
 ]
 
 
