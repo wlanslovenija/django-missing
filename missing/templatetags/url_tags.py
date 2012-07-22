@@ -16,10 +16,15 @@ class FullUrlNode(template.Node):
         self.url = url
 
     def render(self, context):
-        location = None
-        if self.url:
-            location = self.url.resolve(context)
-        return context['request'].build_absolute_uri(location)
+        try:
+            location = None
+            if self.url:
+                location = self.url.resolve(context)
+            return context['request'].build_absolute_uri(location)
+        except:
+            if settings.TEMPLATE_DEBUG:
+                raise
+            return u''
 
 @register.tag
 def fullurl(parser, token):
