@@ -1,9 +1,0 @@
-syntax: regexp
-/dist$
-/build$
-^dist$
-^build$
-^docs/_build$
-syntax: glob
-*.egg-info
-*.pyc
