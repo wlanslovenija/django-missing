@@ -4,7 +4,7 @@ import os
 
 from setuptools import setup, find_packages
 
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 
 if __name__ == '__main__':
     setup(
@@ -14,7 +14,7 @@ if __name__ == '__main__':
         long_description = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
         author = 'Mitar',
         author_email = 'mitar.django@tnode.com',
-        url = 'https://bitbucket.org/mitar/django-missing',
+        url = 'https://github.com/mitar/django-missing',
         license = "AGPLv3",
         packages = find_packages(),
         package_data = {},
