@@ -216,17 +216,17 @@ class UrlTagsTest(django_test.TestCase):
     def test_fullurl_3(self):
         self._test_url('/bar/')
 
-@utils.override_settings(DEBUG=True)
+@unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
 class SafeExceptionReporterFilterTest(django_test.TestCase):
     def setUp(self):
         self.c = test.Client(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
 
-    @unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
     def test_failure(self):
-        response = self.c.get('/failure/')
+        with self.settings(DEBUG=True):
+            response = self.c.get('/failure/')
 
-        self.assertEqual(response.context['settings']['ROOT_URLCONF'], debug.CLEANSED_SUBSTITUTE)
-        self.assertEqual(response.context['settings']['CSRF_COOKIE_DOMAIN'], debug.CLEANSED_SUBSTITUTE)
-        self.assertEqual(response.context['request'].META['TEST_PASSWORD'], debug.CLEANSED_SUBSTITUTE)
-        self.assertEqual(response.context['request'].META['HTTP_COOKIE'], debug.CLEANSED_SUBSTITUTE)
-        self.assertEqual(response.context['request'].META['TEST_COOKIE'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['settings']['ROOT_URLCONF'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['settings']['CSRF_COOKIE_DOMAIN'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['request'].META['TEST_PASSWORD'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['request'].META['HTTP_COOKIE'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['request'].META['TEST_COOKIE'], debug.CLEANSED_SUBSTITUTE)
