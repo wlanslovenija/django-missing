@@ -4,10 +4,14 @@ from __future__ import with_statement
 
 import django
 from django import template
-from django import test
-from django.test import client
+from django import test as django_test
+from django.test import client, utils
+from django.utils import unittest
+from django.views import debug
 
-class ContextTagsTest(test.TestCase):
+from missing import test
+
+class ContextTagsTest(django_test.TestCase):
     def test_setcontext_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -33,7 +37,8 @@ class ContextTagsTest(test.TestCase):
         self.assertEquals(c['variable'].strip(), 'FooBar')
         self.assertEquals(o, '')
 
-class LangTagsTest(test.TestCase):
+class LangTagsTest(django_test.TestCase):
+    @unittest.skipUnless(django.VERSION < (1, 4), "Test for Django < 1.4")
     def test_translate_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -41,12 +46,19 @@ class LangTagsTest(test.TestCase):
             {% translate "FooBar" %}
             """)
 
-        if django.VERSION < (1, 4):
-            self.assertEquals('translate takes 2 arguments', str(cm.exception))
-        else:
-            self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
+        self.assertEquals('translate takes 2 arguments', str(cm.exception))
 
-class ListTagsTest(test.TestCase):
+    @unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
+    def test_translate_2(self):
+        with self.assertRaises(template.TemplateSyntaxError) as cm:
+            t = template.Template("""
+            {% load lang_tags %}
+            {% translate "FooBar" %}
+            """)
+
+        self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
+
+class ListTagsTest(django_test.TestCase):
     def test_split_list_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -107,7 +119,7 @@ class ListTagsTest(test.TestCase):
        
         self.assertEquals(o, '')
 
-class StringTagsTest(test.TestCase):
+class StringTagsTest(django_test.TestCase):
     def test_ensure_sentence_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -138,7 +150,7 @@ class StringTagsTest(test.TestCase):
     def test_ensure_sentence_3(self):
         self._test_string('FooBar?', 'FooBar?')
 
-class UrlTagsTest(test.TestCase):
+class UrlTagsTest(django_test.TestCase):
     def setUp(self):
         self.factory = client.RequestFactory()
 
@@ -203,3 +215,18 @@ class UrlTagsTest(test.TestCase):
 
     def test_fullurl_3(self):
         self._test_url('/bar/')
+
+@utils.override_settings(DEBUG=True)
+class SafeExceptionReporterFilterTest(django_test.TestCase):
+    def setUp(self):
+        self.c = test.Client(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
+
+    @unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
+    def test_failure(self):
+        response = self.c.get('/failure/')
+
+        self.assertEqual(response.context['settings']['ROOT_URLCONF'], debug.CLEANSED_SUBSTITUTE)
+        self.assertEqual(response.context['settings']['CSRF_COOKIE_DOMAIN'], debug.CLEANSED_SUBSTITUTE)
+        self.assertEqual(response.context['request'].META['TEST_PASSWORD'], debug.CLEANSED_SUBSTITUTE)
+        self.assertEqual(response.context['request'].META['HTTP_COOKIE'], debug.CLEANSED_SUBSTITUTE)
+        self.assertEqual(response.context['request'].META['TEST_COOKIE'], debug.CLEANSED_SUBSTITUTE)
