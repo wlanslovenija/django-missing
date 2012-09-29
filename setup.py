@@ -4,6 +4,12 @@ import os
 
 from setuptools import setup, find_packages
 
+try:
+    # Workaround for http://bugs.python.org/issue15881
+    import multiprocessing
+except ImportError:
+    pass
+
 VERSION = '0.1.5'
 
 if __name__ == '__main__':
@@ -16,7 +22,7 @@ if __name__ == '__main__':
         author_email = 'mitar.django@tnode.com',
         url = 'https://github.com/mitar/django-missing',
         license = "AGPLv3",
-        packages = find_packages(),
+        packages = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
         package_data = {},
         classifiers = [
             'Development Status :: 4 - Beta',
@@ -31,6 +37,6 @@ if __name__ == '__main__':
         zip_safe = False,
         install_requires = [
             'Django>=1.2',
-            'django-staticfiles',
         ],
+        test_suite = 'tests.runtests.runtests',
     )
