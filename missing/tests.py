@@ -41,7 +41,7 @@ class LangTagsTest(test.TestCase):
             {% translate "FooBar" %}
             """)
 
-        if django.get_version() < 1.4:
+        if django.get_version() < (1, 4):
             self.assertEquals('translate takes 2 arguments', str(cm.exception))
         else:
             self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
