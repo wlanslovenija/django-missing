@@ -2,6 +2,7 @@
 
 from __future__ import with_statement
 
+import django
 from django import template
 from django import test
 from django.test import client
@@ -40,7 +41,10 @@ class LangTagsTest(test.TestCase):
             {% translate "FooBar" %}
             """)
 
-        self.assertEquals('translate takes 2 arguments', str(cm.exception))
+        if django.get_version() < 1.4:
+            self.assertEquals('translate takes 2 arguments', str(cm.exception))
+        else:
+            self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
 
 class ListTagsTest(test.TestCase):
     def test_split_list_1(self):
