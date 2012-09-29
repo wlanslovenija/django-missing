@@ -14,6 +14,7 @@ Contents
    middleware
    templatetags
    javascript
+   debug
 
 Source Code and Issue Tracker
 -----------------------------

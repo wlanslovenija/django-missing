@@ -7,7 +7,20 @@ debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|CO
 class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
     Safe exception reporter filter which also filters password from
-    request environment (META).
+    request environment (``META``).
+
+    This is useful to not display password and other sensitive data passed to
+    Django through its process environment.
+
+    Furthermore, it configures Django to additionally clean settings with
+    ``URL``, ``CSRF``, and ``COOKIE`` in keys.
+
+    To install it, configure Django to::
+
+        DEFAULT_EXCEPTION_REPORTER_FILTER = 'missing.debug.SafeExceptionReporterFilter'
+
+    and import ``missing.debug`` somewhere in your code, for example, in ``urls.py``
+    of your project.
     """
 
     def get_post_parameters(self, request):
