@@ -12,7 +12,7 @@ def translate(string, lang_code):
     This is useful for text you need in some other language than the current language. For example,
     for links inviting users to switch to their language.
 
-    Sample usage::
+    Example usage::
 
         {% translate "Do you understand this?" "de" %}
     """

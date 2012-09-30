@@ -25,5 +25,3 @@ ROOT_URLCONF = 'test_project.urls'
 INSTALLED_APPS = (
     'missing',
 )
-
-DEFAULT_EXCEPTION_REPORTER_FILTER = 'missing.debug.SafeExceptionReporterFilter'

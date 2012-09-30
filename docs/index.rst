@@ -13,8 +13,8 @@ Contents
 
    middleware
    templatetags
-   javascript
    debug
+   javascript
 
 Source Code and Issue Tracker
 -----------------------------

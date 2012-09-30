@@ -12,7 +12,7 @@ def split_list(value, length):
     
     Last sublist can be shorter if input list length is not a multiplier of the given length.
 
-    Sample usage::
+    Example usage::
 
         {% for group in objects|split_list:"4" %}
             <tr>
@@ -45,7 +45,7 @@ def divide_list(value, count):
     
     Last sublist can be shorter if input list length is not a multiplier of the given number of sublists.
 
-    Sample usage::
+    Example usage::
 
         <tr>
         {% for column in objects|divide_list:"2" %}

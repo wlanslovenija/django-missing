@@ -23,7 +23,7 @@ def setcontext(parser, token):
 
     This is useful when some template tag does not support storing its output in the context itself or we need some complex content (like language, user or URL dependent content) multiple times.
 
-    Sample usage::
+    Example usage::
 
         {% setcontext as varname %}
             {% complextag %}

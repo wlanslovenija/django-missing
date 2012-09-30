@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import re
-import unicodedata
+import re, unicodedata
 
 from django import template
+from django.core import urlresolvers
 from django.conf import settings
 from django.template import defaultfilters
-from django.utils import encoding
-from django.utils import safestring
+from django.utils import encoding, safestring
 
 register = template.Library()
 
@@ -36,11 +35,12 @@ def fullurl(parser, token):
     It is a wrapper around :py:meth:`django.http.HttpRequest.build_absolute_uri`. It requires ``request`` to be available
     in the template context (for example, by using ``django.core.context_processors.request`` context processor).
 
-    Samply usage::
+    Example usage::
 
-        {% url path.to.some_view as the_url %}
+        {% url "view_name" as the_url %}
         {% fullurl the_url %}
     """
+
     args = list(token.split_contents())
 
     if len(args) > 2:
@@ -172,6 +172,8 @@ def downcode(value):
 
     return downcoded
 
+@register.filter(is_safe=True)
+@defaultfilters.stringfilter
 def slugify2(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
@@ -180,6 +182,7 @@ def slugify2(value):
     It is similar to built-in :filter:`slugify` but it also handles special characters in variety of languages
     so that they are not simply removed but properly transliterated/downcoded.
     """
+
     try:
         value = unicodedata.normalize('NFC', value)
         value = downcode(value)
@@ -192,7 +195,83 @@ def slugify2(value):
         else:
             return u''
 
-slugify2.is_safe = True
-slugify2 = defaultfilters.stringfilter(slugify2)
+@register.simple_tag
+def urltemplate(viewname, *args, **kwargs):
+    """
+    Creates URI template in a similar way to how ``url`` tags work but leaving parts of
+    a URI to be filled in by a client. See :rfc:`6570` for more information.
 
-register.filter(slugify2)
+    Names of parts are taken from named groups in URL regex pattern used for the view.
+    You can pre-fill some parts by specifying them as additional arguments to the tag.
+
+    .. warning:: Tag cannot check if pre-fill values specified will really match back
+                 the URL regex pattern, so make sure yourself that they do.
+
+    Example usage::
+
+        {% with variable="42" %}
+            {% urltemplate "view_name" arg1="value" arg2=variable %}
+        {% endwith %}
+
+    If URL pattern would be defined like::
+
+        url(r'^some/view/(?P<arg1>.*)/(?P<arg2>.*)/(?P<param>.*)/$', some_view, name='view_name'),
+
+    The result would be::
+
+        /some/view/value/42/{param}/
+
+    .. note:: Requires Django 1.4+.
+    """
+
+    try:
+        if args and kwargs:
+            raise ValueError("Don't mix *args and **kwargs.")
+        elif args:
+            args = list(args)
+
+        urlconf = urlresolvers.get_urlconf()
+        resolver = urlresolvers.get_resolver(urlconf)
+        prefix = urlresolvers.get_script_prefix()
+
+        possibilities = resolver.reverse_dict.getlist(viewname)
+
+        if len(possibilities) == 0:
+            raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (viewname, args, kwargs))
+        elif len(possibilities) > 1:
+            raise NotImplementedError
+
+        possibility, pattern, defaults = possibilities[0]
+
+        assert len(possibility) > 0
+
+        if len(possibilities) > 1:
+            raise NotImplementedError
+
+        result, params = possibility[0]
+
+        if kwargs:
+            error_params = set(kwargs.keys()) - set(params)
+            if len(error_params):
+                raise ValueError("Params not exist in URL pattern: %s" % ','.join(error_params))
+
+        for param in params:
+            if param.startswith('_'):
+                raise ValueError("URL pattern must contain only named groups.")
+
+            if args:
+                result = result.replace('%%(%s)s' % param, args.pop(0))
+            elif kwargs and param in kwargs:
+                result = result.replace('%%(%s)s' % param, kwargs[param])
+            else:
+                result = result.replace('%%(%s)s' % param, '{%s}' % param)
+
+        if args:
+            raise ValueError("Too many values for params in URL pattern: %s" % ','.join(args))
+
+        return prefix + result
+    except:
+        if settings.TEMPLATE_DEBUG:
+            raise
+        else:
+            return u''

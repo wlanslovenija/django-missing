@@ -3,9 +3,9 @@
 from __future__ import with_statement
 
 import django
-from django import template
-from django import test as django_test
-from django.test import client, utils
+from django import template, test as django_test
+from django.core import urlresolvers
+from django.test import client
 from django.utils import unittest
 from django.views import debug
 
@@ -216,13 +216,87 @@ class UrlTagsTest(django_test.TestCase):
     def test_fullurl_3(self):
         self._test_url('/bar/')
 
-@unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
+@unittest.skipUnless(django.VERSION >= (1, 4), "Tag supported only for Django >= 1.4")
+class UrlTemplateTest(django_test.TestCase):
+    urls = 'missing.tests.urltemplate_urls'
+
+    def setUp(self):
+        self.factory = client.RequestFactory()
+
+    def _test_urltemplate(self, params, result):
+        with self.settings(TEMPLATE_DEBUG=True):
+            t = template.Template("""
+            {%% load url_tags %%}
+            {%% urltemplate %s %%}
+            """ % params)
+
+            c = template.Context()
+            o = t.render(c).strip()
+            self.assertEquals(o, result)
+
+    def test_urltemplate_simply(self):
+        self._test_urltemplate('"test1"', '/test1/')
+
+    def test_urltemplate_nonexistent(self):
+        with self.assertRaises(urlresolvers.NoReverseMatch):
+            self._test_urltemplate('"nonexistent"', '')
+
+    def test_urltemplate_args(self):
+        with self.assertRaisesMessage(ValueError, "URL pattern must contain only named groups."):
+            self._test_urltemplate('"test_args"', '')
+
+    def test_urltemplate_kwargs(self):
+        self._test_urltemplate('"test_kwargs"', '/test_kwargs/{year}/{month}/{day}/')
+
+    def test_urltemplate_mix(self):
+        with self.assertRaisesMessage(ValueError, "Don't mix *args and **kwargs."):
+            self._test_urltemplate('"test_kwargs" "2000" month="12"', '/test_kwargs/2000/12/{day}/')
+
+    def test_urltemplate_kwargs(self):
+        self._test_urltemplate('"test_kwargs" "2000"', '/test_kwargs/2000/{month}/{day}/')
+        self._test_urltemplate('"test_kwargs" "2000" "12"', '/test_kwargs/2000/12/{day}/')
+        self._test_urltemplate('"test_kwargs" "2000" "12" "1"', '/test_kwargs/2000/12/1/')
+
+        self._test_urltemplate('"test_kwargs" year="2000"', '/test_kwargs/2000/{month}/{day}/')
+        self._test_urltemplate('"test_kwargs" year="2000" month="12"', '/test_kwargs/2000/12/{day}/')
+        self._test_urltemplate('"test_kwargs" year="2000" month="12" day="1"', '/test_kwargs/2000/12/1/')
+        self._test_urltemplate('"test_kwargs" year="2000" day="1"', '/test_kwargs/2000/{month}/1/')
+
+        with self.assertRaisesMessage(ValueError, "Too many values for params in URL pattern"):
+            self._test_urltemplate('"test_kwargs" "2000" "12" "1" "foobar"', '/test_kwargs/2000/12/1/')
+
+        with self.assertRaisesMessage(ValueError, "Params not exist in URL pattern"):
+            self._test_urltemplate('"test_kwargs" foobar="42"', '/test_kwargs/{year}/{month}/{day}/')
+
+    def test_urltemplate_api(self):
+        self._test_urltemplate('"api_get_schema"', '/api/{api_name}/{resource_name}/schema/')
+        self._test_urltemplate('"api_get_schema" api_name="v1"', '/api/v1/{resource_name}/schema/')
+
+    def test_urltemplate_example(self):
+        with self.settings(TEMPLATE_DEBUG=True):
+            t = template.Template("""
+            {% load url_tags %}
+            {% with variable="42" %}
+                {% urltemplate "view_name" arg1="value" arg2=variable %}
+            {% endwith %}
+            """)
+
+            c = template.Context()
+            o = t.render(c).strip()
+            self.assertEquals(o, '/some/view/value/42/{param}/')
+
+@unittest.skipUnless(django.VERSION >= (1, 4), "Only Django >= 1.4 has DEFAULT_EXCEPTION_REPORTER_FILTER")
 class SafeExceptionReporterFilterTest(django_test.TestCase):
+    urls = 'missing.tests.safereporting_urls'
+
     def setUp(self):
         self.c = test.Client(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
 
+        # To enable filtering
+        from missing import debug
+
     def test_failure(self):
-        with self.settings(DEBUG=True):
+        with self.settings(DEBUG=True, DEFAULT_EXCEPTION_REPORTER_FILTER='missing.debug.SafeExceptionReporterFilter'):
             response = self.c.get('/failure/')
 
             self.assertEqual(response.context['settings']['ROOT_URLCONF'], debug.CLEANSED_SUBSTITUTE)
