@@ -195,14 +195,22 @@ def slugify2(value):
         else:
             return u''
 
+def unnamed_group_name(param):
+    # Converts unnamed groups sequence numbers prefixed with _ to just numbers
+    if param.startswith('_') and param[1:].isdigit():
+        return param[1:]
+    else:
+        return param
+
 @register.simple_tag
 def urltemplate(viewname, *args, **kwargs):
     """
     Creates URI template in a similar way to how ``url`` tags work but leaving parts of
     a URI to be filled in by a client. See :rfc:`6570` for more information.
 
-    Names of parts are taken from named groups in URL regex pattern used for the view.
-    You can pre-fill some parts by specifying them as additional arguments to the tag.
+    Names of parts are taken from named groups in URL regex pattern used for the view,
+    or as a part's sequence number (zero-based) for unnamed groups. You can pre-fill
+    some parts by specifying them as additional arguments to the tag.
 
     .. warning:: Tag cannot check if pre-fill values specified will really match back
                  the URL regex pattern, so make sure yourself that they do.
@@ -236,40 +244,35 @@ def urltemplate(viewname, *args, **kwargs):
 
         possibilities = resolver.reverse_dict.getlist(viewname)
 
-        if len(possibilities) == 0:
-            raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (viewname, args, kwargs))
-        elif len(possibilities) > 1:
-            raise NotImplementedError
+        for possibility, pattern, defaults in possibilities:
+            assert len(possibility) > 0
 
-        possibility, pattern, defaults = possibilities[0]
+            if len(possibility) > 1:
+                raise NotImplementedError
 
-        assert len(possibility) > 0
+            result, params = possibility[0]
 
-        if len(possibilities) > 1:
-            raise NotImplementedError
+            if kwargs and len(set(kwargs.keys()) - set(params)):
+                # Not all given pre-filled values exist in this URL pattern
+                continue
 
-        result, params = possibility[0]
-
-        if kwargs:
-            error_params = set(kwargs.keys()) - set(params)
-            if len(error_params):
-                raise ValueError("Params not exist in URL pattern: %s" % ','.join(error_params))
-
-        for param in params:
-            if param.startswith('_'):
-                raise ValueError("URL pattern must contain only named groups.")
+            if args and len(params) < len(args):
+                # Too many pre-filled values for this URL pattern
+                continue
 
             if args:
-                result = result.replace('%%(%s)s' % param, args.pop(0))
-            elif kwargs and param in kwargs:
-                result = result.replace('%%(%s)s' % param, kwargs[param])
+                for i, param in enumerate(params):
+                    if i < len(args):
+                        result = result.replace('%%(%s)s' % param, encoding.force_unicode(args[i]))
+                    else:
+                        result = result.replace('%%(%s)s' % param, '{%s}' % unnamed_group_name(param))
             else:
-                result = result.replace('%%(%s)s' % param, '{%s}' % param)
+                for param in params:
+                    result = result.replace('%%(%s)s' % param, encoding.force_unicode(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
 
-        if args:
-            raise ValueError("Too many values for params in URL pattern: %s" % ','.join(args))
+            return prefix + result
 
-        return prefix + result
+        raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (viewname, args, kwargs))
     except:
         if settings.TEMPLATE_DEBUG:
             raise
