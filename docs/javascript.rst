@@ -1,5 +1,5 @@
-JavaScript Functions
-====================
+JavaScript
+==========
 
 Automatic Slug Generation
 -------------------------

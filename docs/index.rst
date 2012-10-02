@@ -14,6 +14,7 @@ Contents
    middleware
    templatetags
    debug
+   timezone
    javascript
 
 Source Code and Issue Tracker

@@ -1,5 +1,5 @@
-Debugging Helpers
-=================
+Debugging
+=========
 
 .. automodule:: missing.debug
     :members:
