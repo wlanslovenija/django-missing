@@ -19,6 +19,10 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '_ext'))
 
+# To make Django settings importable
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "test_project.settings")
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'tests'))
+
 import imp
 module_setup = imp.load_source('module_setup', os.path.join(os.path.dirname(__file__), '..', 'setup.py'))
 VERSION = module_setup.VERSION
