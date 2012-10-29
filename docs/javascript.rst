@@ -52,3 +52,14 @@ and use, for example, as::
 
 .. _internationalization in JavaScript code: https://docs.djangoproject.com/en/dev/topics/i18n/translation/#internationalization-in-javascript-code
 .. _datetime and other formats: https://docs.djangoproject.com/en/dev/topics/i18n/formatting/
+
+Relative datetime
+-----------------
+
+JavaScript implementations of :filter:`timesince`, :filter:`timeuntil`, and :filter:`naturaltime` Django filters
+are also available as extensions to JavaScript ``Date`` prototype by loading::
+
+    <script type="text/javascript" src="{{ STATIC_URL }}missing/humanize.js"></script>
+
+Additionally, ``updatingNaturaltime`` method is provided which behaves similarly to ``naturaltime`` method but
+it takes a DOM element or jQuery selector as an optional argument and makes sure it is updated as time progresses.
