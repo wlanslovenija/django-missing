@@ -68,7 +68,7 @@ Date.prototype.strfdate = function (format) {
     /* function format_B() { Not implemented } */
 
     function format_c() {
-        var offset_hours = ('' +  parseInt(offset / 60)).zfill(2);
+        var offset_hours = ('' +  Math.floor(offset / 60)).zfill(2);
         var offset_minutes = ('' + (offset % 60)).zfill(2);
         var sign = (offset >= 0) ? '+' : '-';
         return dt.strfdate('Y-m-d\\TH:i:s.') + format_u().zfill(6) + (sign + offset_hours + ':' + offset_minutes);
@@ -156,7 +156,7 @@ Date.prototype.strfdate = function (format) {
     }
 
     function format_L(mod) {
-        var y = (typeof mod === 'undefined') ? year : year + mod;
+        var y = typeof mod === 'undefined' ? year : year + mod;
         return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
     }
 
@@ -193,7 +193,7 @@ Date.prototype.strfdate = function (format) {
     /* function format_o() { TODO: To be implemented } */
 
     function format_O() {
-        var offset_hours = ('' +  parseInt(offset / 60)).zfill(2);
+        var offset_hours = ('' +  Math.floor(offset / 60)).zfill(2);
         var offset_minutes = ('' + (offset % 60)).zfill(2);
         var sign = (offset >= 0) ? '+' : '-';
         return (sign + offset_hours + offset_minutes);
@@ -270,7 +270,7 @@ Date.prototype.strfdate = function (format) {
             }
             else {
                 var j = day_of_year + (7 - weekday) + (jan1_weekday - 1);
-                week_number = parseInt(j / 7);
+                week_number = Math.floor(j / 7);
                 if (jan1_weekday > 4) {
                     week_number -= 1;
                 }
