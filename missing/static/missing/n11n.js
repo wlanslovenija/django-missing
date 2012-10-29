@@ -1,6 +1,7 @@
 // Based on http://rishida.net/code/showsource.php?source=normalization/js/n11n.js by Richard Ishida
 // Licence http://creativecommons.org/licenses/by-nc-sa/3.0/
-function nfc(strng) { 
+
+function nfc(strng) {
 	var composed = '';
 	var current;
 	var next;
