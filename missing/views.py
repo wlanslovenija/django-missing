@@ -1,3 +1,6 @@
+from django import http, template
+from django.conf import settings
+from django.template import loader
 from django.utils import decorators
 from django.views.decorators import csrf
 
@@ -12,3 +15,18 @@ class EnsureCsrfCookieMixin(object):
     @decorators.method_decorator(csrf.ensure_csrf_cookie)
     def dispatch(self, *args, **kwargs):
         return super(EnsureCsrfCookieMixin, self).dispatch(*args, **kwargs)
+
+def forbidden_view(request, reason=''):
+    """
+    Displays 403 forbidden page. For example, when request fails CSRF protection.
+
+    Similar to Django built-in view, but using template and request context.
+    """
+
+    from django.middleware import csrf
+    t = loader.get_template('403.html')
+    return http.HttpResponseForbidden(t.render(template.RequestContext(request, {
+        'DEBUG': settings.DEBUG,
+        'reason': reason,
+        'no_referer': reason == csrf.REASON_NO_REFERER,
+    })))
