@@ -20,7 +20,14 @@ def forbidden_view(request, reason=''):
     """
     Displays 403 forbidden page. For example, when request fails CSRF protection.
 
-    Similar to Django built-in view, but using template and request context.
+    Similar to Django built-in view, but using template and request context. You can
+    configure Django to use by adding to ``urls.py``::
+
+        handler403 = 'missing.views.forbidden_view'
+
+    and to ``settings.py``::
+
+        CSRF_FAILURE_VIEW = 'missing.views.forbidden_view'
     """
 
     from django.middleware import csrf
