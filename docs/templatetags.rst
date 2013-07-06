@@ -40,3 +40,11 @@ Use ``{% load url_tags %}`` in your template to load this module.
 
 .. automodule:: missing.templatetags.url_tags
     :members:
+
+``forloop_tags`` module
+-------------------
+
+Use ``{% load forloop_tags %}`` in your template to load this module.
+
+.. automodule:: missing.templatetags.forloop_tags
+    :members:
