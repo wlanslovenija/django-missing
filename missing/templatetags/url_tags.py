@@ -53,6 +53,8 @@ def fullurl(parser, token):
 
     return FullUrlNode(url)
 
+DASH_START_END_RE = re.compile(r'^-+|-+$')
+
 LATIN_MAP = {
     'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE', 'Ç':
     'C', 'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ì': 'I', 'Í': 'I', 'Î': 'I',
@@ -188,7 +190,9 @@ def slugify2(value):
         value = downcode(value)
         value = unicodedata.normalize('NFD', value).encode('ascii', 'ignore')
         value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
-        return safestring.mark_safe(re.sub('[-\s]+', '-', value))
+        value = re.sub('[-\s]+', '-', value)
+        value = DASH_START_END_RE.sub('', value)
+        return safestring.mark_safe(value)
     except:
         if settings.TEMPLATE_DEBUG:
             raise

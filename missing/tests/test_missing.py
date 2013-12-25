@@ -106,7 +106,7 @@ class ListTagsTest(django_test.TestCase):
        
         self.assertEquals(o, '')
 
-    def test_split_list_4(self):
+    def test_split_list_5(self):
         t = template.Template("""
         {% load list_tags %}
         {% for group in objects|split_list:"0" %}{{ group }}{% endfor %}
@@ -147,7 +147,7 @@ class StringTagsTest(django_test.TestCase):
     def test_ensure_sentence_3(self):
         self._test_string('FooBar.', 'FooBar.')
 
-    def test_ensure_sentence_3(self):
+    def test_ensure_sentence_4(self):
         self._test_string('FooBar?', 'FooBar?')
 
 class UrlTagsTest(django_test.TestCase):
@@ -178,8 +178,11 @@ class UrlTagsTest(django_test.TestCase):
     def test_slugify2_2(self):
         self._test_string(u'Işık ılık süt iç', u'isik-ilik-sut-ic')
 
-    def test_slugify2_2(self):
+    def test_slugify2_3(self):
         self._test_string(u'ČĆŽŠĐ čćžšđ', u'cczsdj-cczsdj')
+
+    def test_slugify2_4(self):
+        self._test_string(u'..test foobar..', u'test-foobar')
 
     def _test_url(self, url):
         request = self.factory.get('/foo/')

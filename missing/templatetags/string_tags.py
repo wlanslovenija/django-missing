@@ -1,5 +1,3 @@
-import re
-
 from django import template
 from django.template import defaultfilters
 
