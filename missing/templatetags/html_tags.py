@@ -60,9 +60,6 @@ def heading(context, level, content, classes=''):
     # render context
     top_render_context = context.render_context.dicts[0]
 
-    print context
-    print context.get('base_heading_level', 0)
-
     i = 0
     while anchor in top_render_context.setdefault('heading_anchors', {}):
         anchor = base_anchor + "-" + unicode(i)
