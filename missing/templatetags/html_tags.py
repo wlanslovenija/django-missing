@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django import template
+from django.conf import settings
 from django.utils import text
 
 from . import url_tags
@@ -18,14 +19,24 @@ def anchorify(anchor):
     Example usage::
 
         <h1 id="{{ _("My Blog")|anchorify }}">{% trans "My Blog" %}</h1>
+
+    The result would be::
+
+        <h1 id="my-blog">My Blog</h1>
     """
 
-    anchor = template.defaultfilters.striptags(anchor)
-    anchor = text.unescape_entities(anchor)
-    anchor = url_tags.slugify2(anchor)
-    if not anchor or not anchor[0].isalpha():
-        anchor = 'a' + anchor
-    return anchor
+    try:
+        anchor = template.defaultfilters.striptags(anchor)
+        anchor = text.unescape_entities(anchor)
+        anchor = url_tags.slugify2(anchor)
+        if not anchor or not anchor[0].isalpha():
+            anchor = 'a' + anchor
+        return anchor
+    except:
+        if settings.TEMPLATE_DEBUG:
+            raise
+        else:
+            return u''
 
 @register.inclusion_tag(('heading.html', 'missing/heading.html'), takes_context=True)
 def heading(context, level, content, classes=''):
@@ -51,6 +62,10 @@ def heading(context, level, content, classes=''):
     Example usage::
 
         {% heading 1 _("My Blog") %}
+
+    The result would be::
+
+        <h1 id="my-blog" class="heading ">My Blog</h1>
     """
 
     anchor = base_anchor = anchorify(content)
@@ -93,6 +108,10 @@ def set_base_heading_level(context, level, top_level=False):
 
         {% set_base_heading_level 1 %}
         {% heading 1 _("My Blog") %}
+
+    The result would be::
+
+        <h2 id="my-blog" class="heading ">My Blog</h2>
     """
 
     if top_level:
@@ -102,4 +121,4 @@ def set_base_heading_level(context, level, top_level=False):
         context['base_heading_level'] = level
 
     # Return nothing
-    return ''
+    return u''
