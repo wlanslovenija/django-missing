@@ -6,7 +6,7 @@ import django
 from django import template, test as django_test
 from django.core import urlresolvers
 from django.test import client
-from django.utils import unittest
+from django.utils import html, unittest
 from django.views import debug
 
 from missing import test
@@ -340,3 +340,159 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
             self.assertEqual(response.context['request'].META['TEST_PASSWORD'], debug.CLEANSED_SUBSTITUTE)
             self.assertEqual(response.context['request'].META['HTTP_COOKIE'], debug.CLEANSED_SUBSTITUTE)
             self.assertEqual(response.context['request'].META['TEST_COOKIE'], debug.CLEANSED_SUBSTITUTE)
+
+class HTMLTagsTest(django_test.TestCase):
+    def test_heading_1(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h1 id="test" class="heading ">Test</h1>""")
+
+    def test_heading_2(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% set_base_heading_level 3 %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+
+    def test_heading_3(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "Test" "test" %}
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h1 id="test" class="heading test">Test</h1>""")
+
+    def test_heading_4(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "Longer test with spaces and various characters!?" %}
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h1 id="longer-test-with-spaces-and-various-characters" class="heading ">Longer test with spaces and various characters!?</h1>""")
+
+    def test_heading_5(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "12345" %}
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h1 id="a12345" class="heading ">12345</h1>""")
+
+    def test_heading_6(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "Test" %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context()
+        o = html.strip_spaces_between_tags(t.render(c).strip())
+        self.assertEquals(o, """<h1 id="test" class="heading ">Test</h1><h1 id="test-0" class="heading ">Test</h1>""")
+
+    def test_heading_7(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+
+    def test_heading_8(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% set_base_heading_level 2 %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h3 id="test" class="heading ">Test</h3>""")
+
+    def test_heading_9(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% with base_heading_level=2 %}
+            {% heading 1 "Test" %}
+        {% endwith %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h3 id="test" class="heading ">Test</h3>""")
+
+    def test_heading_10(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% with base_heading_level=2 %}
+        {% endwith %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+
+    def test_heading_11(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% with base_heading_level=2 %}
+            {% set_base_heading_level 4 %}
+        {% endwith %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+
+    def test_heading_12(self):
+        t = template.Template("""
+        {% load html_tags %}
+        {% with base_heading_level=2 %}
+            {% set_base_heading_level 4 "True" %}
+        {% endwith %}
+        {% heading 1 "Test" %}
+        """)
+
+        c = template.Context({
+            'base_heading_level': 3,
+        })
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h5 id="test" class="heading ">Test</h5>""")
+
+    def test_anchorify_example(self):
+        t = template.Template("""
+        {% load i18n html_tags %}
+        <h1 id="{{ _("My Blog")|anchorify }}">{% trans "My Blog" %}</h1>
+        """)
+
+        c = template.Context()
+        o = t.render(c).strip()
+        self.assertEquals(o, """<h1 id="my-blog">My Blog</h1>""")
