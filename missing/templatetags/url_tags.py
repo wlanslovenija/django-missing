@@ -282,3 +282,57 @@ def urltemplate(viewname, *args, **kwargs):
             raise
         else:
             return u''
+
+@register.simple_tag(takes_context=True)
+def active_url(context, urls, class_name='active'):
+    """
+    Returns ``class_name`` (default ``active``) if any of given ``urls`` are real prefixes
+    of the current request path.
+
+    Useful when you want to highlight links to the current section of the site. For example,
+    in menu entries.
+
+    Example usage::
+
+        {% active_url "/test/" %}
+    """
+
+    if not urls:
+        return u''
+
+    if not hasattr(urls, '__iter__'):
+        urls = [urls]
+
+    try:
+        for url in urls:
+            if not url:
+                continue
+
+            if url.startswith('/'):
+                current_url = context['request'].path
+            else:
+                current_url = context['request'].build_absolute_uri(context['request'].path)
+
+            if url == current_url:
+                return class_name
+
+            if url == '/':
+                # If url is / it would match anything
+                # It should be true only if current_url is /,
+                # which we tested already above
+                continue
+
+            # True if url is a real prefix of current_url
+            # We test for equality above, so if it is a prefix
+            # then current_url is for sure longer, so we test
+            # that prefix ends with /, to make sure it is a real
+            # path prefix
+            if current_url.startswith(url) and current_url.startswith('%s/' % url):
+                return class_name
+
+        return u''
+    except:
+        if settings.TEMPLATE_DEBUG:
+            raise
+        else:
+            return u''
