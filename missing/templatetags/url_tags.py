@@ -305,6 +305,10 @@ def active_url(context, urls, class_name='active'):
 
     try:
         for url in urls:
+            # To make sure we use resolved lazy instances,
+            # otherwise there are sometimes errors
+            url = encoding.force_unicode(url)
+
             if not url:
                 continue
 
