@@ -11,7 +11,7 @@ class SetContextNode(template.TextNode):
         self.variable = variable
 
     def __repr__(self):
-        return super(template.TextNode, super(SetContextNode, self)).__repr__()
+        return super(template.TextNode, self).__repr__()
 
     def render(self, context):
         try:
