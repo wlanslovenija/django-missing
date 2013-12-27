@@ -4,7 +4,7 @@ Template Tags and Filters
 ``context_tags`` module
 -----------------------
 
-Use ``{% load context_tags %}`` in your template to load this module.
+This module is loaded automatically for all templates.
 
 .. automodule:: missing.templatetags.context_tags
     :members:

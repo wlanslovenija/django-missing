@@ -16,12 +16,12 @@ class ContextTagsTest(django_test.TestCase):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
             {% load context_tags %}
-            {% setcontext %}
+            {% setcontext foo bar %}
             FooBar
             {% endsetcontext %}
             """)
 
-        self.assertIn('expected format', str(cm.exception))
+        self.assertIn('tag takes none or 2 arguments', str(cm.exception))
 
     def test_setcontext_2(self):
         t = template.Template("""
