@@ -12,10 +12,11 @@ from django.views import debug
 from missing import test
 
 class ContextTagsTest(django_test.TestCase):
+    urls = 'missing.tests.context_urls'
+
     def test_setcontext_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
-            {% load context_tags %}
             {% setcontext foo bar %}
             FooBar
             {% endsetcontext %}
@@ -26,7 +27,6 @@ class ContextTagsTest(django_test.TestCase):
     def test_setcontext_2(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
-            {% load context_tags %}
             {% setcontext %}
             FooBar
             {% endsetcontext %}
@@ -36,7 +36,6 @@ class ContextTagsTest(django_test.TestCase):
 
     def test_setcontext_3(self):
         t = template.Template("""
-        {% load context_tags %}
         {% setcontext as variable %}
         FooBar
         {% endsetcontext %}
@@ -47,6 +46,180 @@ class ContextTagsTest(django_test.TestCase):
         self.assertIn('variable', c)
         self.assertEquals(c['variable'].strip(), 'FooBar')
         self.assertEquals(o, '')
+
+    def test_contextblock_1(self):
+        with self.assertRaises(template.TemplateSyntaxError) as cm:
+            t = template.Template("""
+            {{ something }}
+            {% contextblock %}
+            {% endcontextblock %}
+            """)
+
+        self.assertIn('must be the first tag in the template', str(cm.exception))
+
+    def test_contextblock_2(self):
+        base = template.Template("""
+        {% contextblock %}{% if double_call %}{% setcontext as bug %}bug{% endsetcontext %}{% endif %}{% endcontextblock %}{% spaceless %}<html>
+            <body>
+                <head>
+                    <title>{{ title }}</title>
+                </head>
+                <body>
+                    <h1>{{ title }}</h1>
+                    <p><a href="{{ homepage }}">{{ title }}</a></p>
+                </body>
+            </body>
+        </html>{% endspaceless %}""")
+
+        t = template.Template("""
+        {% extends base %}
+
+        {% contextblock %}
+            {% load future i18n %}
+            {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
+            {% url "homepage" as homepage %}
+            {% setcontext as double_call %}true{% endsetcontext %}
+            {{ block.super }}
+        {% endcontextblock %}
+        """)
+
+        c = template.Context({
+            'username': 'Username',
+            'base': base,
+        })
+        o = t.render(c).strip()
+
+        self.assertNotIn('bug', c)
+        self.assertEqual(o, """<html><body><head><title>Username's blog</title></head><body><h1>Username's blog</h1><p><a href="/homepage/">Username's blog</a></p></body></body></html>""")
+
+    def test_contextblock_3(self):
+        base = template.Template("""
+            {% contextblock %}{% if double_call %}{% setcontext as bug %}bug{% endsetcontext %}{% endif %}{% setcontext as double_call %}true{% endsetcontext %}{% endcontextblock %}{% spaceless %}<html>
+            <body>
+                <head>
+                    <title>{{ title }}</title>
+                </head>
+                <body>
+                    <h1>{{ title }}</h1>
+                    <p><a href="{{ homepage }}">{{ title }}</a></p>
+                </body>
+            </body>
+        </html>{% endspaceless %}""")
+
+        t = template.Template("""
+        {% extends base %}
+
+        {% contextblock %}
+            {% load future i18n %}
+            {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
+            {% url "homepage" as homepage %}
+            {{ block.super }}
+        {% endcontextblock %}
+        """)
+
+        c = template.Context({
+            'username': 'Username',
+            'base': base,
+        })
+        o = t.render(c).strip()
+
+        self.assertNotIn('bug', c)
+        self.assertEqual(o, """<html><body><head><title>Username's blog</title></head><body><h1>Username's blog</h1><p><a href="/homepage/">Username's blog</a></p></body></body></html>""")
+
+
+    def test_contextblock_4(self):
+        base1 = template.Template("""
+        {% contextblock %}{% if double_call %}{% setcontext as bug %}bug{% endsetcontext %}{% endif %}{% endcontextblock %}{% spaceless %}<html>
+            <body>
+                <head>
+                    <title>{{ title }}</title>
+                </head>
+                <body>
+                    <h1>{{ title }}</h1>
+                    <p><a href="{{ homepage }}">{{ title }}</a></p>
+                </body>
+            </body>
+        </html>{% endspaceless %}""")
+
+        base2 = template.Template("""
+        {% extends base1 %}
+
+        {% contextblock %}
+            {% load future %}
+
+            {% url "homepage" as homepage %}
+        {% endcontextblock %}
+        """)
+
+        t = template.Template("""
+        {% extends base2 %}
+
+        {% contextblock %}
+            {% load future i18n %}
+            {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
+            {% setcontext as double_call %}true{% endsetcontext %}
+            {{ block.super }}
+        {% endcontextblock %}
+        """)
+
+        c = template.Context({
+            'username': 'Username',
+            'base1': base1,
+            'base2': base2,
+        })
+        o = t.render(c).strip()
+
+        print c
+
+        self.assertNotIn('bug', c)
+        self.assertEqual(o, """<html><body><head><title>Username's blog</title></head><body><h1>Username's blog</h1><p><a href="/homepage/">Username's blog</a></p></body></body></html>""")
+
+    def test_contextblock_5(self):
+        base1 = template.Template("""
+        {% contextblock %}{% endcontextblock %}{% spaceless %}<html>
+            <body>
+                <head>
+                    <title>{{ title }}</title>
+                </head>
+                <body>
+                    <h1>{{ title }}</h1>
+                    <p><a href="{{ homepage }}">{{ title }}</a></p>
+                </body>
+            </body>
+        </html>{% endspaceless %}""")
+
+        base2 = template.Template("""
+        {% extends base1 %}
+
+        {% contextblock %}
+            {% load future %}
+
+            {% url "homepage" as homepage %}
+
+            {% if double_call %}{% setcontext as bug %}bug{% endsetcontext %}{% endif %}
+            {% setcontext as double_call %}true{% endsetcontext %}
+        {% endcontextblock %}""")
+
+        t = template.Template("""
+        {% extends base2 %}
+
+        {% contextblock %}
+            {% load future i18n %}
+            {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
+            {{ block.super }}
+        {% endcontextblock %}
+        """)
+
+        c = template.Context({
+            'username': 'Username',
+            'base1': base1,
+            'base2': base2,
+        })
+        o = t.render(c).strip()
+
+        self.assertNotIn('bug', c)
+        self.assertEqual(o, """<html><body><head><title>Username's blog</title></head><body><h1>Username's blog</h1><p><a href="/homepage/">Username's blog</a></p></body></body></html>""")
+
 
 class LangTagsTest(django_test.TestCase):
     @unittest.skipUnless(django.VERSION < (1, 4), "Test for Django < 1.4")

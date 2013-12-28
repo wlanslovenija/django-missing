@@ -1,6 +1,11 @@
 from django import template
 from django.conf import settings
 
+# We have to import "loader" first to prevent import cycle issues when building documentation
+from django.template import loader, loader_tags
+
+CONTEXT_BLOCK_NAME = '__context_block__'
+
 register = template.Library()
 
 
@@ -44,3 +49,109 @@ def setcontext(parser, token):
     parser.delete_first_token()
     
     return SetContextNode(nodelist, variable)
+
+
+class ContextBlockNode(loader_tags.BlockNode):
+    # We want it to be the first tag in the template
+    must_be_first = True
+
+    def __init__(self, name, nodelist):
+        super(ContextBlockNode, self).__init__(CONTEXT_BLOCK_NAME, nodelist)
+
+    # Copy of Django 1.4 BlockNode.render which allows sub-clasing
+    # See https://github.com/django/django/pull/2123
+    # Additionally, it does not push and pop context around the block so that
+    # block rendering can modify current context
+    def _render(self, context):
+        block_context = context.render_context.get(loader_tags.BLOCK_CONTEXT_KEY)
+        if block_context is None:
+            context['block'] = self
+            result = self.nodelist.render(context)
+        else:
+            push = block = block_context.pop(self.name)
+            if block is None:
+                block = self
+            # Create new block so we can store context without thread-safety issues.
+            block = type(self)(block.name, block.nodelist)
+            block.context = context
+            context['block'] = block
+            result = block.nodelist.render(context)
+            if push is not None:
+                block_context.push(self.name, push)
+        return result
+
+    def render(self, context):
+        try:
+            # We ignore the output
+            self._render(context)
+        except:
+            if settings.TEMPLATE_DEBUG:
+                raise
+        return u''
+
+    def super(self):
+        super(ContextBlockNode, self).super()
+
+        # We make sure block.super is called only once
+        render_context = self.context.render_context
+        if (loader_tags.BLOCK_CONTEXT_KEY in render_context and render_context[loader_tags.BLOCK_CONTEXT_KEY].get_block(self.name) is not None):
+            render_context[loader_tags.BLOCK_CONTEXT_KEY].pop(self.name)
+
+        return u''
+
+
+@register.tag
+def contextblock(parser, token):
+    """
+    A special :tag:`block` tag which does not render anything but can be used to modify a template
+    context.
+
+    The tag is rendered first thus modifying context before other blocks are rendered. A tag in an
+    extending template is rendered after parent tags, allowing you to override template context in
+    child templates.
+
+    The tag has to be the first tag, immediately after the :tag:`extends` tag. You have to define
+    a empty context block tag at the very start of your base template.
+
+    Example usage, in your base template::
+
+        {% contextblock %}{% endcontextblock %}<html>
+            <body>
+                <head>
+                    <title>{{ title }}</title>
+                </head>
+                <body>
+                    <h1>{{ title }}</h1>
+                    <p><a href="{{ homepage }}">{{ title }}</a></p>
+                </body>
+            </body>
+        </html>
+
+    In your extending template::
+
+        {% extends "base.html" %}
+
+        {% contextblock %}
+            {% load future i18n %}
+            {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
+            {% url "homepage" as homepage %}
+        {% endcontextblock %}
+    """
+
+    nodelist = parser.parse(('endcontextblock',))
+
+    # Make sure we call block.super at least once
+    # (and in ContextBlockNode.super we make sure it is called only once)
+    block_super_token = template.Token(template.TOKEN_VAR, 'block.super')
+    block_super_token.source = template.UNKNOWN_SOURCE, (0, len('{{ block.super }}'))
+    filter_expression = parser.compile_filter(block_super_token.contents)
+    var_node = parser.create_variable_node(filter_expression)
+    # To push it through the normal logic first
+    parser.extend_nodelist(nodelist, var_node, block_super_token)
+    # But we want it at the very beginning
+    var_node = nodelist.pop()
+    nodelist.insert(0, var_node)
+
+    parser.delete_first_token()
+
+    return ContextBlockNode(None, nodelist)
