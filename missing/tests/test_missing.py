@@ -21,9 +21,20 @@ class ContextTagsTest(django_test.TestCase):
             {% endsetcontext %}
             """)
 
-        self.assertIn('tag takes none or 2 arguments', str(cm.exception))
+        self.assertIn('tag takes 2 arguments and the first argument', str(cm.exception))
 
     def test_setcontext_2(self):
+        with self.assertRaises(template.TemplateSyntaxError) as cm:
+            t = template.Template("""
+            {% load context_tags %}
+            {% setcontext %}
+            FooBar
+            {% endsetcontext %}
+            """)
+
+        self.assertIn('tag takes 2 arguments and the first argument', str(cm.exception))
+
+    def test_setcontext_3(self):
         t = template.Template("""
         {% load context_tags %}
         {% setcontext as variable %}
