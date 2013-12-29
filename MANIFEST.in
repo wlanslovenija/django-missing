@@ -1,4 +1,5 @@
 recursive-include missing/static *
+recursive-include missing/templates *
 include docs/Makefile docs/*.py docs/*.rst docs/_ext/*.py
 include COPYING
 include LICENSE
