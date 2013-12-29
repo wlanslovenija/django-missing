@@ -169,8 +169,6 @@ class ContextTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
 
-        print c
-
         self.assertNotIn('bug', c)
         self.assertEqual(o, """<html><body><head><title>Username's blog</title></head><body><h1>Username's blog</h1><p><a href="/homepage/">Username's blog</a></p></body></body></html>""")
 
