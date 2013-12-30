@@ -143,7 +143,8 @@ def contextblock(parser, token):
     # Make sure we call block.super at least once
     # (and in ContextBlockNode.super we make sure it is called only once)
     block_super_token = template.Token(template.TOKEN_VAR, 'block.super')
-    block_super_token.source = template.UNKNOWN_SOURCE, (0, len('{{ block.super }}'))
+    if hasattr(token, 'source'):
+        block_super_token.source = token.source
     filter_expression = parser.compile_filter(block_super_token.contents)
     var_node = parser.create_variable_node(filter_expression)
     # To push it through the normal logic first
