@@ -206,8 +206,91 @@ def unnamed_group_name(param):
     else:
         return param
 
-@register.simple_tag
-def urltemplate(viewname, *args, **kwargs):
+def urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs):
+    if args and kwargs:
+        raise ValueError("Don't mix *args and **kwargs.")
+    elif args:
+        args = list(args)
+
+    possibilities = resolver.reverse_dict.getlist(view)
+
+    for possibility, pattern, defaults in possibilities:
+        assert len(possibility) > 0
+
+        if len(possibility) > 1:
+            raise NotImplementedError
+
+        result, params = possibility[0]
+
+        if kwargs and len(set(kwargs.keys()) - set(params)):
+            # Not all given pre-filled values exist in this URL pattern
+            continue
+
+        if args and len(params) < len(args):
+            # Too many pre-filled values for this URL pattern
+            continue
+
+        if args:
+            for i, param in enumerate(params):
+                if i < len(args):
+                    result = result.replace('%%(%s)s' % param, encoding.force_unicode(args[i]))
+                else:
+                    result = result.replace('%%(%s)s' % param, '{%s}' % unnamed_group_name(param))
+        else:
+            for param in params:
+                result = result.replace('%%(%s)s' % param, encoding.force_unicode(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
+
+        return prefix + result
+
+    raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (view, args, kwargs))
+
+def urltemplate_namespaces(viewname, current_app=None, *args, **kwargs):
+    urlconf = urlresolvers.get_urlconf()
+    resolver = urlresolvers.get_resolver(urlconf)
+    prefix = urlresolvers.get_script_prefix()
+
+    parts = viewname.split(':')
+    parts.reverse()
+    view = parts[0]
+    path = parts[1:]
+
+    resolved_path = []
+    ns_pattern = ''
+    while path:
+        ns = path.pop()
+
+        # Lookup the name to see if it could be an app identifier
+        try:
+            app_list = resolver.app_dict[ns]
+            # Yes! Path part matches an app in the current Resolver
+            if current_app and current_app in app_list:
+                # If we are reversing for a particular app,
+                # use that namespace
+                ns = current_app
+            elif ns not in app_list:
+                # The name isn't shared by one of the instances
+                # (i.e., the default) so just pick the first instance
+                # as the default.
+                ns = app_list[0]
+        except KeyError:
+            pass
+
+        try:
+            extra, resolver = resolver.namespace_dict[ns]
+            resolved_path.append(ns)
+            ns_pattern = ns_pattern + extra
+        except KeyError, key:
+            if resolved_path:
+                raise urlresolvers.NoReverseMatch("%s is not a registered namespace inside '%s'" % (key, ':'.join(resolved_path)))
+            else:
+                raise urlresolvers.NoReverseMatch("%s is not a registered namespace" % key)
+    if ns_pattern:
+        resolver = urlresolvers.get_ns_resolver(ns_pattern, resolver)
+
+    return urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs)
+
+@register.simple_tag(takes_context=True)
+def urltemplate(context, viewname, *args, **kwargs):
     """
     Creates URI template in a similar way to how ``url`` tags work but leaving parts of
     a URI to be filled in by a client. See :rfc:`6570` for more information.
@@ -237,46 +320,7 @@ def urltemplate(viewname, *args, **kwargs):
     """
 
     try:
-        if args and kwargs:
-            raise ValueError("Don't mix *args and **kwargs.")
-        elif args:
-            args = list(args)
-
-        urlconf = urlresolvers.get_urlconf()
-        resolver = urlresolvers.get_resolver(urlconf)
-        prefix = urlresolvers.get_script_prefix()
-
-        possibilities = resolver.reverse_dict.getlist(viewname)
-
-        for possibility, pattern, defaults in possibilities:
-            assert len(possibility) > 0
-
-            if len(possibility) > 1:
-                raise NotImplementedError
-
-            result, params = possibility[0]
-
-            if kwargs and len(set(kwargs.keys()) - set(params)):
-                # Not all given pre-filled values exist in this URL pattern
-                continue
-
-            if args and len(params) < len(args):
-                # Too many pre-filled values for this URL pattern
-                continue
-
-            if args:
-                for i, param in enumerate(params):
-                    if i < len(args):
-                        result = result.replace('%%(%s)s' % param, encoding.force_unicode(args[i]))
-                    else:
-                        result = result.replace('%%(%s)s' % param, '{%s}' % unnamed_group_name(param))
-            else:
-                for param in params:
-                    result = result.replace('%%(%s)s' % param, encoding.force_unicode(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
-
-            return prefix + result
-
-        raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (viewname, args, kwargs))
+        return urltemplate_namespaces(viewname, context.current_app, *args, **kwargs)
     except:
         if settings.TEMPLATE_DEBUG:
             raise
