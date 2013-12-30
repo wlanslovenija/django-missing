@@ -90,6 +90,9 @@ class ContextBlockNode(loader_tags.BlockNode):
         return u''
 
     def super(self):
+        if not hasattr(self, 'context'):
+            return u''
+
         super(ContextBlockNode, self).super()
 
         # We make sure block.super is called only once
