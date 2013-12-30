@@ -6,7 +6,7 @@ from django import template
 from django.core import urlresolvers
 from django.conf import settings
 from django.template import defaultfilters
-from django.utils import encoding, safestring
+from django.utils import encoding, html, safestring
 
 register = template.Library()
 
@@ -320,7 +320,10 @@ def urltemplate(context, viewname, *args, **kwargs):
     """
 
     try:
-        return urltemplate_namespaces(viewname, context.current_app, *args, **kwargs)
+        url = urltemplate_namespaces(viewname, context.current_app, *args, **kwargs)
+        if context.autoescape:
+            url = html.conditional_escape(url)
+        return safestring.mark_safe(url)
     except:
         if settings.TEMPLATE_DEBUG:
             raise
