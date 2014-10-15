@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-VERSION = '0.1.11'
+VERSION = '0.1.12'
 
 if __name__ == '__main__':
     setup(
@@ -19,8 +19,8 @@ if __name__ == '__main__':
         description = 'Some missing features in Django. Are not missing anymore.',
         long_description = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
         author = 'Mitar',
-        author_email = 'mitar.django@tnode.com',
-        url = 'https://github.com/mitar/django-missing',
+        author_email = 'development@wlan-si.net',
+        url = 'https://github.com/wlanslovenija/django-missing',
         license = "AGPLv3",
         packages = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
         package_data = {},

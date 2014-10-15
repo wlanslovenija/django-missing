@@ -29,7 +29,7 @@ Source Code and Issue Tracker
 Feel free to fork and contribute with pull requests, or open issues you might have.
 Ideas for improvements are welcome, too.
 
-.. _GitHub: https://github.com/mitar/django-missing
+.. _GitHub: https://github.com/wlanslovenija/django-missing
 
 Indices and Tables
 ------------------
