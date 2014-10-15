@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.core import urlresolvers
-from django.template import loader
+from django.template import base
 
 # To load docutils extensions somewhere
 from missing import admindocs
 
 # To be able to force use of "contextblock" tag immediately after "extends" tag, we add it to built-in tags
-loader.add_to_builtins('missing.templatetags.context_tags')
+base.add_to_builtins('missing.templatetags.context_tags')
 
 # NoReverseMatch exceptions are silent (replaced by TEMPLATE_STRING_IF_INVALID setting), but we
 # disable this behavior here
