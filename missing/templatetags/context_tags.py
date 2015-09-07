@@ -1,8 +1,7 @@
-from django import template
 from django.conf import settings
 
 # We have to import "loader" first to prevent import cycle issues when building documentation
-from django.template import loader, loader_tags
+from django.template import loader, loader_tags, base as template
 
 CONTEXT_BLOCK_NAME = '__context_block__'
 
