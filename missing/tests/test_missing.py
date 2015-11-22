@@ -229,17 +229,6 @@ class ContextTagsTest(django_test.TestCase):
 
 
 class LangTagsTest(django_test.TestCase):
-    @unittest.skipUnless(django.VERSION < (1, 4), "Test for Django < 1.4")
-    def test_translate_1(self):
-        with self.assertRaises(template.TemplateSyntaxError) as cm:
-            t = template.Template("""
-            {% load lang_tags %}
-            {% translate "FooBar" %}
-            """)
-
-        self.assertEquals('translate takes 2 arguments', str(cm.exception))
-
-    @unittest.skipUnless(django.VERSION >= (1, 4), "Test for Django >= 1.4")
     def test_translate_2(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -410,7 +399,6 @@ class UrlTagsTest(django_test.TestCase):
     def test_fullurl_3(self):
         self._test_url('/bar/')
 
-@unittest.skipUnless(django.VERSION >= (1, 4), "Tag supported only for Django >= 1.4")
 class UrlTemplateTest(django_test.TestCase):
     urls = 'missing.tests.urltemplate_urls'
 
@@ -515,7 +503,6 @@ class UrlTemplateTest(django_test.TestCase):
             o = t.render(c).strip()
             self.assertEquals(o, '/some/view/value/42/{param}/')
 
-@unittest.skipUnless(django.VERSION >= (1, 4), "Only Django >= 1.4 has DEFAULT_EXCEPTION_REPORTER_FILTER")
 class SafeExceptionReporterFilterTest(django_test.TestCase):
     urls = 'missing.tests.safereporting_urls'
 
