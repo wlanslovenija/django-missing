@@ -2,14 +2,23 @@
 
 from __future__ import with_statement
 
-import django
 from django import template, test as django_test
 from django.core import urlresolvers
 from django.test import client
-from django.utils import html, unittest
+from django.utils import html
 from django.views import debug
 
-from missing import test
+
+class NoErrorClient(client.Client):
+    """
+    Test client which does not specially handle exceptions.
+
+    Useful for testing HTTP 500 error handlers.
+    """
+
+    def store_exc_info(self, **kwargs):
+        pass
+
 
 class ContextTagsTest(django_test.TestCase):
     urls = 'missing.tests.context_urls'
@@ -511,7 +520,7 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
     urls = 'missing.tests.safereporting_urls'
 
     def setUp(self):
-        self.c = test.Client(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
+        self.c = NoErrorClient(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
 
     def test_failure(self):
         with self.settings(DEBUG=True, DEFAULT_EXCEPTION_REPORTER_FILTER='missing.debug.SafeExceptionReporterFilter'):
