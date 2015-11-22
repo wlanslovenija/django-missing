@@ -1,15 +1,14 @@
-from django import template
 from django.conf import settings
 
 # We have to import "loader" first to prevent import cycle issues when building documentation
-from django.template import loader, loader_tags
+from django.template import loader, loader_tags, base
 
 CONTEXT_BLOCK_NAME = '__context_block__'
 
-register = template.Library()
+register = base.Library()
 
 
-class SetContextNode(template.Node):
+class SetContextNode(base.Node):
     def __init__(self, nodelist, variable):
         self.nodelist = nodelist
         self.variable = variable
@@ -43,11 +42,11 @@ def setcontext(parser, token):
     args = list(token.split_contents())
 
     if len(args) != 3 or args[1] != "as":
-        raise template.TemplateSyntaxError("'%s' tag takes 2 arguments and the first argument must be 'as'" % args[0])
+        raise base.TemplateSyntaxError("'%s' tag takes 2 arguments and the first argument must be 'as'" % args[0])
     variable = args[2]
 
     parser.delete_first_token()
-    
+
     return SetContextNode(nodelist, variable)
 
 
@@ -145,7 +144,7 @@ def contextblock(parser, token):
 
     # Make sure we call block.super at least once
     # (and in ContextBlockNode.super we make sure it is called only once)
-    block_super_token = template.Token(template.TOKEN_VAR, 'block.super')
+    block_super_token = base.Token(base.TOKEN_VAR, 'block.super')
     if hasattr(token, 'source'):
         block_super_token.source = token.source
     filter_expression = parser.compile_filter(block_super_token.contents)
