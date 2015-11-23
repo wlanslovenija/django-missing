@@ -36,7 +36,7 @@ class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
         for key in request.COOKIES:
             request.COOKIES[key] = debug.cleanse_setting(key, request.COOKIES[key])
 
-        post = super(SafeExceptionReporterFilter, self).get_post_parameters(request)
+        post = super(SafeExceptionReporterFilter, self).get_post_parameters(request).copy()
 
         for key in post:
             post[key] = debug.cleanse_setting(key, post[key])
