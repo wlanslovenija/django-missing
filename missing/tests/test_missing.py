@@ -2,6 +2,7 @@
 
 from __future__ import with_statement
 
+import django
 from django import template, test as django_test
 from django.core import urlresolvers
 from django.test import client
@@ -246,7 +247,10 @@ class ListTagsTest(django_test.TestCase):
             {{ objects|split_list }}
             """)
 
-        self.assertEquals('split_list requires 1 arguments, 0 provided', str(cm.exception))
+        if django.VERSION < (1, 7):
+            self.assertEquals('split_list requires 1 arguments, 0 provided', str(cm.exception))
+        else:
+            self.assertEquals('split_list requires 2 arguments, 1 provided', str(cm.exception))
 
     def test_split_list_2(self):
         t = template.Template("""
@@ -307,7 +311,10 @@ class StringTagsTest(django_test.TestCase):
             {{ "FooBar"|ensure_sentence:"" }}
             """)
 
-        self.assertEquals('ensure_sentence requires 0 arguments, 1 provided', str(cm.exception))
+        if django.VERSION < (1, 7):
+            self.assertEquals('ensure_sentence requires 0 arguments, 1 provided', str(cm.exception))
+        else:
+            self.assertEquals('ensure_sentence requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
@@ -341,7 +348,10 @@ class UrlTagsTest(django_test.TestCase):
             {{ "FooBar"|slugify2:"" }}
             """)
 
-        self.assertEquals('slugify2 requires 0 arguments, 1 provided', str(cm.exception))
+        if django.VERSION < (1, 7):
+            self.assertEquals('slugify2 requires 0 arguments, 1 provided', str(cm.exception))
+        else:
+            self.assertEquals('slugify2 requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
