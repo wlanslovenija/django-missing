@@ -517,7 +517,7 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
     urls = 'missing.tests.safereporting_urls'
 
     def setUp(self):
-        self.c = NoErrorClient(TEST_PASSWORD='foobar', TEST_COOKIE='foobar')
+        self.c = NoErrorClient(TEST_PASSWORD='foobar', TEST_COOKIE='foobar', TEST_NORMAL='ok')
 
     def test_failure(self):
         with self.settings(DEBUG=True, DEFAULT_EXCEPTION_REPORTER_FILTER='missing.debug.SafeExceptionReporterFilter'):
@@ -528,6 +528,11 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
             self.assertEqual(response.context['request'].META['TEST_PASSWORD'], debug.CLEANSED_SUBSTITUTE)
             self.assertEqual(response.context['request'].META['HTTP_COOKIE'], debug.CLEANSED_SUBSTITUTE)
             self.assertEqual(response.context['request'].META['TEST_COOKIE'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['request'].META['TEST_NORMAL'], 'ok')
+
+            response = self.c.post('/failure/', data={'csrfmiddlewaretoken': 'abcde', 'normal': 'ok'})
+            self.assertEqual(response.context['filtered_POST']['csrfmiddlewaretoken'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(response.context['filtered_POST']['normal'], 'ok')
 
 class HTMLTagsTest(django_test.TestCase):
     def test_heading_1(self):

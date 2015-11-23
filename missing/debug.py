@@ -2,7 +2,7 @@ import re
 
 from django.views import debug
 
-debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|COOKIE|csrftoken|sessionid')
+debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|COOKIE|csrftoken|csrfmiddlewaretoken|sessionid')
 
 class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
@@ -13,8 +13,8 @@ class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     This is useful to not display passwords and other sensitive data passed to
     Django through its process environment.
 
-    Furthermore, it configures Django to additionally clean settings with
-    ``URL``, ``CSRF``, ``COOKIE``, ``csrftoken``, and ``sessionid`` in keys.
+    Furthermore, it configures Django to additionally clean settings with ``URL``, ``CSRF``,
+    ``COOKIE``, ``csrftoken``, ``csrfmiddlewaretoken``, and ``sessionid`` in keys.
 
     To install it, configure Django to::
 
@@ -27,11 +27,18 @@ class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
 
     def get_post_parameters(self, request):
-        # We hook into this method to modify request in place, not nice, but it works
+        if request is None and not self.is_active(request):
+            return super(SafeExceptionReporterFilter, self).get_post_parameters(request)
+
+        # We hook into this method to modify request in place, not nice, but it works.
         for key in request.META:
-            if key.isupper():
-                request.META[key] = debug.cleanse_setting(key, request.META[key])
+            request.META[key] = debug.cleanse_setting(key, request.META[key])
         for key in request.COOKIES:
             request.COOKIES[key] = debug.cleanse_setting(key, request.COOKIES[key])
 
-        return super(SafeExceptionReporterFilter, self).get_post_parameters(request)
+        post = super(SafeExceptionReporterFilter, self).get_post_parameters(request)
+
+        for key in post:
+            post[key] = debug.cleanse_setting(key, post[key])
+
+        return post
