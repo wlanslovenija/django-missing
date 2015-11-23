@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-VERSION = '0.1.13'
+VERSION = '0.1.14'
 
 if __name__ == '__main__':
     setup(
