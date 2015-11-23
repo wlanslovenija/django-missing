@@ -115,10 +115,15 @@ def set_base_heading_level(context, level, top_level=False):
     """
 
     if top_level:
-        # Ugly way of accessing top level context directly.
         # For Django > 1.4 an empty context contains already builtins, so depending
         # on that fact we set `base_heading_level` at the appropriate level.
-        context.dicts[len(template.Context().dicts)]['base_heading_level'] = level
+        if template.Context().dicts == [{}]:
+            top_level_index = 0
+        else:
+            top_level_index = 1
+
+        # Ugly way of accessing top level context directly.
+        context.dicts[top_level_index]['base_heading_level'] = level
     else:
         context['base_heading_level'] = level
 
