@@ -2,7 +2,7 @@ import re
 
 from django.views import debug
 
-debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|COOKIE|csrftoken|csrfmiddlewaretoken|sessionid')
+debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|COOKIE|csrftoken|csrfmiddlewaretoken|sessionid', re.IGNORECASE)
 
 class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
