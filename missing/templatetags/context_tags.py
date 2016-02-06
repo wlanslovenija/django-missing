@@ -1,11 +1,12 @@
 from django.conf import settings
 
 # We have to import "loader" first to prevent import cycle issues when building documentation
+from django import template
 from django.template import loader, loader_tags, base
 
 CONTEXT_BLOCK_NAME = '__context_block__'
 
-register = base.Library()
+register = template.Library()
 
 
 class SetContextNode(base.Node):
