@@ -4,7 +4,11 @@ Template Tags and Filters
 ``context_tags`` module
 -----------------------
 
-This module is loaded automatically for all templates.
+For Django 1.9+ you need to add ``missing.templatetags.context_tags`` to your
+``builtins`` option for the ``DjangoTemplates`` backend.
+
+For previous Django versions, this module is loaded automatically for all
+templates.
 
 .. automodule:: missing.templatetags.context_tags
     :members:
