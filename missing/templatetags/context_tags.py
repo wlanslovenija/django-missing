@@ -149,7 +149,7 @@ def contextblock(parser, token):
     if hasattr(token, 'source'):
         block_super_token.source = token.source
     filter_expression = parser.compile_filter(block_super_token.contents)
-    var_node = parser.create_variable_node(filter_expression)
+    var_node = base.VariableNode(filter_expression)
     # To push it through the normal logic first
     parser.extend_nodelist(nodelist, var_node, block_super_token)
     # But we want it at the very beginning
