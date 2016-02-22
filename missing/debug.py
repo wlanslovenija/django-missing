@@ -2,7 +2,8 @@ import re
 
 from django.views import debug
 
-debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|URL|CSRF|COOKIE|csrftoken|csrfmiddlewaretoken|sessionid', re.IGNORECASE)
+# We use a negative lookbehind to not escape "wsgi.url_scheme" which is used as source for request schema.
+debug.HIDDEN_SETTINGS = re.compile(debug.HIDDEN_SETTINGS.pattern + '|(?<!wsgi\.)URL|CSRF|COOKIE|csrftoken|csrfmiddlewaretoken|sessionid', re.IGNORECASE)
 
 class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
