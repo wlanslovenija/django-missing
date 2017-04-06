@@ -320,7 +320,18 @@ def urltemplate(context, viewname, *args, **kwargs):
     """
 
     try:
-        url = urltemplate_namespaces(viewname, context.current_app, *args, **kwargs)
+        try:
+            current_app = context.current_app
+        except AttributeError:
+            try:
+                current_app = context.request.current_app
+            except AttributeError:
+                try:
+                    current_app = context.request.resolver_match.namespace
+                except AttributeError:
+                    current_app = None
+
+        url = urltemplate_namespaces(viewname, current_app, *args, **kwargs)
         if context.autoescape:
             url = html.conditional_escape(url)
         return safestring.mark_safe(url)
