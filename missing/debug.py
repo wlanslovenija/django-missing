@@ -28,7 +28,7 @@ class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
     """
 
     def get_post_parameters(self, request):
-        if request is None and not self.is_active(request):
+        if request is None:
             return super(SafeExceptionReporterFilter, self).get_post_parameters(request)
 
         # We hook into this method to modify request in place, not nice, but it works.
