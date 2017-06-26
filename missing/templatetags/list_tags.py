@@ -33,7 +33,7 @@ def split_list(value, length):
         for i in range(int(math.ceil(len(value) / float(length)))):
             yield value[i*length:i*length+length]
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             yield []
@@ -71,7 +71,7 @@ def divide_list(value, count):
              yield value[i*new_len:(i+1)*new_len]
         yield value[count*new_len-new_len:]
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             yield []

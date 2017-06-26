@@ -33,7 +33,7 @@ def anchorify(anchor):
             anchor = 'a' + anchor
         return anchor
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             return u''

@@ -24,6 +24,6 @@ def translate(string, lang_code):
         translation.activate(old_lang)
         return translated
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         return u''

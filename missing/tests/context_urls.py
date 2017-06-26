@@ -1,5 +1,5 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^homepage/$', lambda request: None, name='homepage'),
-)
+]

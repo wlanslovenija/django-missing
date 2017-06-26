@@ -21,9 +21,8 @@ class NoErrorClient(client.Client):
         pass
 
 
+@django_test.override_settings(ROOT_URLCONF='missing.tests.context_urls')
 class ContextTagsTest(django_test.TestCase):
-    urls = 'missing.tests.context_urls'
-
     def test_setcontext_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
             t = template.Template("""
@@ -85,7 +84,7 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base %}
 
         {% contextblock %}
-            {% load future i18n %}
+            {% load i18n %}
             {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
             {% url "homepage" as homepage %}
             {% setcontext as double_call %}true{% endsetcontext %}
@@ -120,7 +119,7 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base %}
 
         {% contextblock %}
-            {% load future i18n %}
+            {% load i18n %}
             {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
             {% url "homepage" as homepage %}
             {{ block.super }}
@@ -155,8 +154,6 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base1 %}
 
         {% contextblock %}
-            {% load future %}
-
             {% url "homepage" as homepage %}
         {% endcontextblock %}
         """)
@@ -165,7 +162,7 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base2 %}
 
         {% contextblock %}
-            {% load future i18n %}
+            {% load i18n %}
             {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
             {% setcontext as double_call %}true{% endsetcontext %}
             {{ block.super }}
@@ -200,8 +197,6 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base1 %}
 
         {% contextblock %}
-            {% load future %}
-
             {% url "homepage" as homepage %}
 
             {% if double_call %}{% setcontext as bug %}bug{% endsetcontext %}{% endif %}
@@ -212,7 +207,7 @@ class ContextTagsTest(django_test.TestCase):
         {% extends base2 %}
 
         {% contextblock %}
-            {% load future i18n %}
+            {% load i18n %}
             {% setcontext as title %}{% blocktrans %}{{ username }}'s blog{% endblocktrans %}{% endsetcontext %}
             {{ block.super }}
         {% endcontextblock %}
@@ -239,6 +234,7 @@ class LangTagsTest(django_test.TestCase):
 
         self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
 
+
 class ListTagsTest(django_test.TestCase):
     def test_split_list_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
@@ -247,10 +243,7 @@ class ListTagsTest(django_test.TestCase):
             {{ objects|split_list }}
             """)
 
-        if django.VERSION < (1, 7):
-            self.assertEquals('split_list requires 1 arguments, 0 provided', str(cm.exception))
-        else:
-            self.assertEquals('split_list requires 2 arguments, 1 provided', str(cm.exception))
+        self.assertEquals('split_list requires 2 arguments, 1 provided', str(cm.exception))
 
     def test_split_list_2(self):
         t = template.Template("""
@@ -303,6 +296,7 @@ class ListTagsTest(django_test.TestCase):
        
         self.assertEquals(o, '')
 
+
 class StringTagsTest(django_test.TestCase):
     def test_ensure_sentence_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
@@ -311,10 +305,7 @@ class StringTagsTest(django_test.TestCase):
             {{ "FooBar"|ensure_sentence:"" }}
             """)
 
-        if django.VERSION < (1, 7):
-            self.assertEquals('ensure_sentence requires 0 arguments, 1 provided', str(cm.exception))
-        else:
-            self.assertEquals('ensure_sentence requires 1 arguments, 2 provided', str(cm.exception))
+        self.assertEquals('ensure_sentence requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
@@ -337,6 +328,7 @@ class StringTagsTest(django_test.TestCase):
     def test_ensure_sentence_4(self):
         self._test_string('FooBar?', 'FooBar?')
 
+
 class UrlTagsTest(django_test.TestCase):
     def setUp(self):
         self.factory = client.RequestFactory()
@@ -348,10 +340,7 @@ class UrlTagsTest(django_test.TestCase):
             {{ "FooBar"|slugify2:"" }}
             """)
 
-        if django.VERSION < (1, 7):
-            self.assertEquals('slugify2 requires 0 arguments, 1 provided', str(cm.exception))
-        else:
-            self.assertEquals('slugify2 requires 1 arguments, 2 provided', str(cm.exception))
+        self.assertEquals('slugify2 requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
@@ -409,14 +398,14 @@ class UrlTagsTest(django_test.TestCase):
     def test_fullurl_3(self):
         self._test_url('/bar/')
 
-class UrlTemplateTest(django_test.TestCase):
-    urls = 'missing.tests.urltemplate_urls'
 
+@django_test.override_settings(ROOT_URLCONF='missing.tests.urltemplate_urls')
+class UrlTemplateTest(django_test.TestCase):
     def setUp(self):
         self.factory = client.RequestFactory()
 
     def _test_urltemplate(self, params, result):
-        with self.settings(TEMPLATE_DEBUG=True):
+        with self.settings(DEBUG=True):
             t = template.Template("""
             {%% load url_tags %%}
             {%% urltemplate %s %%}
@@ -501,7 +490,7 @@ class UrlTemplateTest(django_test.TestCase):
         self._test_urltemplate('"api_get_schema" api_name="v1"', '/api/v1/{resource_name}/schema/')
 
     def test_urltemplate_example(self):
-        with self.settings(TEMPLATE_DEBUG=True):
+        with self.settings(DEBUG=True):
             t = template.Template("""
             {% load url_tags %}
             {% with variable="42" %}
@@ -513,9 +502,9 @@ class UrlTemplateTest(django_test.TestCase):
             o = t.render(c).strip()
             self.assertEquals(o, '/some/view/value/42/{param}/')
 
-class SafeExceptionReporterFilterTest(django_test.TestCase):
-    urls = 'missing.tests.safereporting_urls'
 
+@django_test.override_settings(ROOT_URLCONF='missing.tests.safereporting_urls')
+class SafeExceptionReporterFilterTest(django_test.TestCase):
     def setUp(self):
         self.c = NoErrorClient(TEST_PASSWORD='foobar', TEST_COOKIE='foobar', TEST_NORMAL='ok')
 
@@ -531,8 +520,10 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
             self.assertEqual(response.context['request'].META['TEST_NORMAL'], 'ok')
 
             response = self.c.post('/failure/', data={'csrfmiddlewaretoken': 'abcde', 'normal': 'ok'})
-            self.assertEqual(response.context['filtered_POST']['csrfmiddlewaretoken'], debug.CLEANSED_SUBSTITUTE)
-            self.assertEqual(response.context['filtered_POST']['normal'], 'ok')
+            post_items = dict(response.context['filtered_POST_items'])
+            self.assertEqual(post_items['csrfmiddlewaretoken'], debug.CLEANSED_SUBSTITUTE)
+            self.assertEqual(post_items['normal'], 'ok')
+
 
 class HTMLTagsTest(django_test.TestCase):
     def test_heading_1(self):

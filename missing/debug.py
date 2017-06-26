@@ -23,8 +23,6 @@ class SafeExceptionReporterFilter(debug.SafeExceptionReporterFilter):
 
     and import ``missing.debug`` somewhere in your code, for example, in ``urls.py``
     of your project.
-
-    .. note:: Requires Django 1.4+.
     """
 
     def get_post_parameters(self, request):

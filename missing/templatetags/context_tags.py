@@ -18,7 +18,7 @@ class SetContextNode(base.Node):
         try:
             context[self.variable] = self.nodelist.render(context)
         except:
-            if settings.TEMPLATE_DEBUG:
+            if settings.DEBUG:
                 raise
 
         return u''
@@ -58,10 +58,8 @@ class ContextBlockNode(loader_tags.BlockNode):
     def __init__(self, name, nodelist):
         super(ContextBlockNode, self).__init__(CONTEXT_BLOCK_NAME, nodelist)
 
-    # Copy of Django 1.4 BlockNode.render which allows sub-clasing
-    # See https://github.com/django/django/pull/2123
-    # Additionally, it does not push and pop context around the block so that
-    # block rendering can modify current context
+    # Copy of BlockNode.render which does not push and pop context around the
+    # block so that block rendering can modify current context
     def _render(self, context):
         block_context = context.render_context.get(loader_tags.BLOCK_CONTEXT_KEY)
         if block_context is None:
@@ -85,7 +83,7 @@ class ContextBlockNode(loader_tags.BlockNode):
             # We ignore the output
             self._render(context)
         except:
-            if settings.TEMPLATE_DEBUG:
+            if settings.DEBUG:
                 raise
         return u''
 

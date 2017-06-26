@@ -21,7 +21,7 @@ class FullUrlNode(template.Node):
                 location = self.url.resolve(context)
             return context['request'].build_absolute_uri(location)
         except:
-            if settings.TEMPLATE_DEBUG:
+            if settings.DEBUG:
                 raise
             return u''
 
@@ -194,7 +194,7 @@ def slugify2(value):
         value = DASH_START_END_RE.sub('', value)
         return safestring.mark_safe(value)
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             return u''
@@ -315,8 +315,6 @@ def urltemplate(context, viewname, *args, **kwargs):
     The result would be::
 
         /some/view/value/42/{param}/
-
-    .. note:: Requires Django 1.4+.
     """
 
     try:
@@ -336,7 +334,7 @@ def urltemplate(context, viewname, *args, **kwargs):
             url = html.conditional_escape(url)
         return safestring.mark_safe(url)
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             return u''
@@ -394,7 +392,7 @@ def active_url(context, urls, class_name='active'):
 
         return u''
     except:
-        if settings.TEMPLATE_DEBUG:
+        if settings.DEBUG:
             raise
         else:
             return u''
