@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django import template
 from django.conf import settings
-from django.utils import text
+from django.utils import encoding, text
 
 from . import url_tags
 
@@ -77,7 +77,7 @@ def heading(context, level, content, classes=''):
 
     i = 0
     while anchor in top_render_context.setdefault('heading_anchors', {}):
-        anchor = base_anchor + "-" + unicode(i)
+        anchor = base_anchor + "-" + encoding.force_text(i)
         i += 1
     top_render_context['heading_anchors'][anchor] = True
 

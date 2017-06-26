@@ -6,7 +6,7 @@ import django
 from django import template, test as django_test
 from django.core import urlresolvers
 from django.test import client
-from django.utils import html
+from django.utils import encoding, html
 from django.views import debug
 
 
@@ -268,7 +268,7 @@ class ListTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
        
-        self.assertEquals(o, unicode(numbers[0:5]) + unicode(numbers[5:]))
+        self.assertEquals(o, encoding.force_text(list(numbers[0:5])) + encoding.force_text(list(numbers[5:])))
 
     def test_split_list_4(self):
         t = template.Template("""
@@ -355,13 +355,16 @@ class UrlTagsTest(django_test.TestCase):
         self.assertEquals(o, second)
 
     def test_slugify2_2(self):
-        self._test_string(u'Işık ılık süt iç', u'isik-ilik-sut-ic')
+        with self.settings(DEBUG=True):
+            self._test_string(u'Işık ılık süt iç', u'isik-ilik-sut-ic')
 
     def test_slugify2_3(self):
-        self._test_string(u'ČĆŽŠĐ čćžšđ', u'cczsdj-cczsdj')
+        with self.settings(DEBUG=True):
+            self._test_string(u'ČĆŽŠĐ čćžšđ', u'cczsdj-cczsdj')
 
     def test_slugify2_4(self):
-        self._test_string(u'..test foobar..', u'test-foobar')
+        with self.settings(DEBUG=True):
+            self._test_string(u'..test foobar..', u'test-foobar')
 
     def _test_url(self, url):
         request = self.factory.get('/foo/')
@@ -525,6 +528,7 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
             self.assertEqual(post_items['normal'], 'ok')
 
 
+@django_test.override_settings(DEBUG=True)
 class HTMLTagsTest(django_test.TestCase):
     def test_heading_1(self):
         t = template.Template("""

@@ -1,6 +1,6 @@
 from django import template
 from django.conf import settings
-from django.utils import translation
+from django.utils import encoding, translation
 
 register = template.Library()
 
@@ -20,7 +20,7 @@ def translate(string, lang_code):
     try:
         old_lang = translation.get_language()
         translation.activate(lang_code)
-        translated = unicode(translation.ugettext(string))
+        translated = encoding.force_text(translation.ugettext(string))
         translation.activate(old_lang)
         return translated
     except:

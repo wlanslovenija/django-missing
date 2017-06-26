@@ -149,8 +149,8 @@ class Downcoder(object):
 
         for lookup in ALL_DOWNCODE_MAPS:
             for c, l in lookup.items():
-                c = unicodedata.normalize('NFC', encoding.force_unicode(c))
-                l = l.encode('ascii', 'strict')
+                c = unicodedata.normalize('NFC', encoding.force_text(c))
+                l = encoding.force_text(l.encode('ascii', 'strict'), encoding='ascii')
                 self.map[c] = l
                 chars += c
 
@@ -188,8 +188,8 @@ def slugify2(value):
     try:
         value = unicodedata.normalize('NFC', value)
         value = downcode(value)
-        value = unicodedata.normalize('NFD', value).encode('ascii', 'ignore')
-        value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
+        value = encoding.force_text(unicodedata.normalize('NFD', value).encode('ascii', 'ignore'), encoding='ascii')
+        value = encoding.force_text(re.sub('[^\w\s-]', '', value).strip().lower())
         value = re.sub('[-\s]+', '-', value)
         value = DASH_START_END_RE.sub('', value)
         return safestring.mark_safe(value)
@@ -233,12 +233,12 @@ def urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs):
         if args:
             for i, param in enumerate(params):
                 if i < len(args):
-                    result = result.replace('%%(%s)s' % param, encoding.force_unicode(args[i]))
+                    result = result.replace('%%(%s)s' % param, encoding.force_text(args[i]))
                 else:
                     result = result.replace('%%(%s)s' % param, '{%s}' % unnamed_group_name(param))
         else:
             for param in params:
-                result = result.replace('%%(%s)s' % param, encoding.force_unicode(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
+                result = result.replace('%%(%s)s' % param, encoding.force_text(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
 
         return prefix + result
 
@@ -363,7 +363,7 @@ def active_url(context, urls, class_name='active'):
         for url in urls:
             # To make sure we use resolved lazy instances,
             # otherwise there are sometimes errors
-            url = encoding.force_unicode(url)
+            url = encoding.force_text(url)
 
             if not url:
                 continue
