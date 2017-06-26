@@ -1,6 +1,6 @@
 import os
+import unittest
 
-from django.utils import unittest
 
 def suite():
     return unittest.TestSuite((
