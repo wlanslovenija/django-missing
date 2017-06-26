@@ -523,7 +523,11 @@ class SafeExceptionReporterFilterTest(django_test.TestCase):
             self.assertEqual(response.context['request'].META['TEST_NORMAL'], 'ok')
 
             response = self.c.post('/failure/', data={'csrfmiddlewaretoken': 'abcde', 'normal': 'ok'})
-            post_items = dict(response.context['filtered_POST_items'])
+            # In Django >= 1.11.
+            if 'filtered_POST_items' in response.context:
+                post_items = dict(response.context['filtered_POST_items'])
+            else:
+                post_items = response.context['filtered_POST']
             self.assertEqual(post_items['csrfmiddlewaretoken'], debug.CLEANSED_SUBSTITUTE)
             self.assertEqual(post_items['normal'], 'ok')
 
