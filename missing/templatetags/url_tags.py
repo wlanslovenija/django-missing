@@ -279,7 +279,7 @@ def urltemplate_namespaces(viewname, current_app=None, *args, **kwargs):
             extra, resolver = resolver.namespace_dict[ns]
             resolved_path.append(ns)
             ns_pattern = ns_pattern + extra
-        except KeyError, key:
+        except KeyError as key:
             if resolved_path:
                 raise urlresolvers.NoReverseMatch("%s is not a registered namespace inside '%s'" % (key, ':'.join(resolved_path)))
             else:
