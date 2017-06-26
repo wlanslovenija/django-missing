@@ -154,7 +154,7 @@ class Downcoder(object):
                 self.map[c] = l
                 chars += c
 
-        self.regex = re.compile(ur'[' + chars + ']|[^' + chars + ']+', re.U)
+        self.regex = re.compile(r'[' + chars + ']|[^' + chars + ']+', re.U)
 
 downcoder = Downcoder()
 
