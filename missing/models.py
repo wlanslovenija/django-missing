@@ -1,5 +1,11 @@
 from django.conf import settings
-from django.core import urlresolvers
+
+try:
+    # RemovedInDjango20Warning: Importing from django.core.urlresolvers
+    # is deprecated in favor of django.urls
+    from django.urls import urlresolvers
+except ImportError:
+    from django.core import urlresolvers
 
 # To load docutils extensions somewhere
 from missing import admindocs
