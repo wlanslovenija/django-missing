@@ -1,8 +1,7 @@
 from django.conf import settings
 
 try:
-    # RemovedInDjango20Warning: Importing from django.core.urlresolvers
-    # is deprecated in favor of django.urls
+    # Importing from django.core.urlresolvers is deprecated in favor of django.urls
     from django.urls import urlresolvers
 except ImportError:
     from django.core import urlresolvers
