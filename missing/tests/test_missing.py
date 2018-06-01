@@ -4,7 +4,10 @@ from __future__ import with_statement
 
 import django
 from django import template, test as django_test
-from django.core import urlresolvers
+try:
+    from django.urls import NoReverseMatch
+except ImportError:
+    from django.core.urlresolvers import NoReverseMatch
 from django.test import client
 from django.utils import encoding, html
 from django.views import debug
@@ -51,7 +54,7 @@ class ContextTagsTest(django_test.TestCase):
         """)
         c = template.Context()
         o = t.render(c).strip()
-       
+
         self.assertIn('variable', c)
         self.assertEquals(c['variable'].strip(), 'FooBar')
         self.assertEquals(o, '')
@@ -254,7 +257,7 @@ class ListTagsTest(django_test.TestCase):
             'objects': range(10),
         })
         o = t.render(c).strip()
-       
+
         self.assertEquals(o, '|4|4|2|')
 
     def test_split_list_3(self):
@@ -267,7 +270,7 @@ class ListTagsTest(django_test.TestCase):
             'objects': numbers,
         })
         o = t.render(c).strip()
-       
+
         self.assertEquals(o, encoding.force_text(list(numbers[0:5])) + encoding.force_text(list(numbers[5:])))
 
     def test_split_list_4(self):
@@ -280,7 +283,7 @@ class ListTagsTest(django_test.TestCase):
             'objects': numbers,
         })
         o = t.render(c).strip()
-       
+
         self.assertEquals(o, '')
 
     def test_split_list_5(self):
@@ -293,7 +296,7 @@ class ListTagsTest(django_test.TestCase):
             'objects': numbers,
         })
         o = t.render(c).strip()
-       
+
         self.assertEquals(o, '')
 
 
@@ -321,7 +324,7 @@ class StringTagsTest(django_test.TestCase):
 
     def test_ensure_sentence_2(self):
         self._test_string('FooBar', 'FooBar.')
-    
+
     def test_ensure_sentence_3(self):
         self._test_string('FooBar.', 'FooBar.')
 
@@ -422,7 +425,7 @@ class UrlTemplateTest(django_test.TestCase):
         self._test_urltemplate('"test1"', '/test1/')
 
     def test_urltemplate_nonexistent(self):
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"nonexistent"', '')
 
     def test_urltemplate_mix(self):
@@ -437,10 +440,10 @@ class UrlTemplateTest(django_test.TestCase):
         self._test_urltemplate('"test_args" "2000" "12"', '/test_args/2000/12/{2}/')
         self._test_urltemplate('"test_args" "2000" "12" "1"', '/test_args/2000/12/1/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_args" year="2000"', '/test_args/2000/{month}/{day}/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_args" "2000" "12" "1" "foobar"', '/test_args/2000/12/1/')
 
     def test_urltemplate_kwargs1(self):
@@ -456,10 +459,10 @@ class UrlTemplateTest(django_test.TestCase):
         self._test_urltemplate('"test_kwargs" year="2000" month="12" day="1"', '/test_kwargs/2000/12/1/')
         self._test_urltemplate('"test_kwargs" year="2000" day="1"', '/test_kwargs/2000/{month}/1/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_kwargs" "2000" "12" "1" "foobar"', '/test_kwargs/2000/12/1/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_kwargs" foobar="42"', '/test_kwargs/{year}/{month}/{day}/')
 
     def test_urltemplate_mixed1(self):
@@ -473,10 +476,10 @@ class UrlTemplateTest(django_test.TestCase):
         self._test_urltemplate('"test_mixed" year="2000"', '/test_mixed/2000/{0}/{day}/')
         self._test_urltemplate('"test_mixed" year="2000" day="1"', '/test_mixed/2000/{0}/1/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_mixed" "2000" "12" "1" "foobar"', '/test_mixed/2000/12/1/')
 
-        with self.assertRaises(urlresolvers.NoReverseMatch):
+        with self.assertRaises(NoReverseMatch):
             self._test_urltemplate('"test_mixed" foobar="42"', '/test_mixed/{year}/{month}/{day}/')
 
     def test_urltemplate_possible1(self):
