@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-VERSION = '0.2.1'
+VERSION = '1.0.0'
 
 if __name__ == '__main__':
     setup(
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         include_package_data = True,
         zip_safe = False,
         install_requires = [
-            'Django>=1.10.7',
+            'Django>=1.11.26',
         ],
         test_suite = 'tests.runtests.runtests',
     )
