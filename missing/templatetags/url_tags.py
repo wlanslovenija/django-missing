@@ -3,7 +3,10 @@
 import re, unicodedata
 
 from django import template
-from django.core import urlresolvers
+try:
+    from django.core import urlresolvers
+except ImportError:
+    from django import urls as urlresolvers
 from django.conf import settings
 from django.template import defaultfilters
 from django.utils import encoding, html, safestring
