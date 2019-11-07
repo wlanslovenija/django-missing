@@ -2,8 +2,10 @@
 
 from __future__ import with_statement
 
-import django
 from django import template, test as django_test
+
+from missing.templatetags.string_tags import endswith
+
 try:
     from django import urls
 except ImportError:
@@ -330,6 +332,10 @@ class StringTagsTest(django_test.TestCase):
 
     def test_ensure_sentence_4(self):
         self._test_string('FooBar?', 'FooBar?')
+
+    def test_endswith(self):
+        self.assertTrue(endswith("foobar", "bar"))
+        self.assertFalse(endswith("foobar", "foo"))
 
 
 class UrlTagsTest(django_test.TestCase):

@@ -30,3 +30,11 @@ def startswith(value, arg):
     """
 
     return value.startswith(arg)
+
+@register.filter
+def endswith(value, arg):
+    """
+    Returns True if the given string ends with an argument suffix, otherwise returns False.
+    """
+
+    return value.endswith(arg)
