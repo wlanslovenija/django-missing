@@ -141,9 +141,14 @@ def contextblock(parser, token):
 
     nodelist = parser.parse(('endcontextblock',))
 
+    if hasattr(base, 'TokenType'):
+        TOKEN_VAR = base.TokenType.VAR
+    else:
+        TOKEN_VAR = base.TOKEN_VAR
+
     # Make sure we call block.super at least once
     # (and in ContextBlockNode.super we make sure it is called only once)
-    block_super_token = base.Token(base.TOKEN_VAR, 'block.super')
+    block_super_token = base.Token(TOKEN_VAR, 'block.super')
     if hasattr(token, 'source'):
         block_super_token.source = token.source
     filter_expression = parser.compile_filter(block_super_token.contents)
