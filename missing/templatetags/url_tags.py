@@ -245,12 +245,12 @@ def urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs):
 
         return prefix + result
 
-    raise urlresolvers.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (view, args, kwargs))
+    raise urls.NoReverseMatch("Reverse for '%s' with arguments '%s' and keyword arguments '%s' not found." % (view, args, kwargs))
 
 def urltemplate_namespaces(viewname, current_app=None, *args, **kwargs):
-    urlconf = urlresolvers.get_urlconf()
-    resolver = urlresolvers.get_resolver(urlconf)
-    prefix = urlresolvers.get_script_prefix()
+    urlconf = urls.get_urlconf()
+    resolver = urls.get_resolver(urlconf)
+    prefix = urls.get_script_prefix()
 
     parts = viewname.split(':')
     parts.reverse()
@@ -284,11 +284,11 @@ def urltemplate_namespaces(viewname, current_app=None, *args, **kwargs):
             ns_pattern = ns_pattern + extra
         except KeyError as key:
             if resolved_path:
-                raise urlresolvers.NoReverseMatch("%s is not a registered namespace inside '%s'" % (key, ':'.join(resolved_path)))
+                raise urls.NoReverseMatch("%s is not a registered namespace inside '%s'" % (key, ':'.join(resolved_path)))
             else:
-                raise urlresolvers.NoReverseMatch("%s is not a registered namespace" % key)
+                raise urls.NoReverseMatch("%s is not a registered namespace" % key)
     if ns_pattern:
-        resolver = urlresolvers.get_ns_resolver(ns_pattern, resolver)
+        resolver = urls.get_ns_resolver(ns_pattern, resolver)
 
     return urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs)
 
