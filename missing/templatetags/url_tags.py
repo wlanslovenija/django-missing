@@ -217,7 +217,12 @@ def urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs):
 
     possibilities = resolver.reverse_dict.getlist(view)
 
-    for possibility, pattern, defaults, converters in possibilities:
+    for possibility_entry in possibilities:
+        if len(possibility_entry) == 3:
+            possibility, pattern, defaults = possibility_entry
+        else:
+            possibility, pattern, defaults, converters = possibility_entry
+
         assert len(possibility) > 0
 
         if len(possibility) > 1:
