@@ -1,8 +1,8 @@
 from django.conf import settings
 try:
-    from django.urls import reverse
+    from django import urls
 except ImportError:
-    from django.core.urlresolvers import reverse
+    from django.core import urlresolvers as urls
 from django.utils import translation
 
 class ForceAdminLanguage(object):
@@ -25,7 +25,7 @@ class ForceAdminLanguage(object):
     """
 
     def process_request(self, request):
-        admin_url = reverse('admin:index')
+        admin_url = urls.reverse('admin:index')
         admin_preview_url = admin_url + 'r/'
         if request.path.startswith(admin_url) and not request.path.startswith(admin_preview_url):
             translation.activate(settings.ADMIN_LANGUAGE_CODE)

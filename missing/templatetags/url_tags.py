@@ -4,9 +4,9 @@ import re, unicodedata
 
 from django import template
 try:
-    from django.core import urlresolvers
+    from django import urls
 except ImportError:
-    from django import urls as urlresolvers
+    from django.core import urlresolvers as urls
 from django.conf import settings
 from django.template import defaultfilters
 from django.utils import encoding, html, safestring
