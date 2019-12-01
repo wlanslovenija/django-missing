@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 if __name__ == '__main__':
     setup(
@@ -21,14 +21,14 @@ if __name__ == '__main__':
         author = 'Mitar',
         author_email = 'development@wlan-si.net',
         url = 'https://github.com/wlanslovenija/django-missing',
-        license = "AGPLv3",
+        license = 'BSD-3-Clause',
         packages = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
         package_data = {},
         classifiers = [
             'Development Status :: 4 - Beta',
             'Environment :: Web Environment',
             'Intended Audience :: Developers',
-            'License :: OSI Approved :: GNU Affero General Public License v3',
+            'License :: OSI Approved :: BSD License',
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             'Framework :: Django',
