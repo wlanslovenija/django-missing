@@ -2,7 +2,19 @@ from __future__ import absolute_import
 
 from django import template
 from django.conf import settings
-from django.utils import encoding, text
+# Remove this check when support for Python < 3.4 is dropped.
+# https://docs.djangoproject.com/en/3.0/releases/3.0/#id3
+try:
+    from html import unescape
+except ImportError:
+    from django.utils.text import unescape_entities as unescape
+# Remove this check when support for Python 2 is dropped.
+# https://docs.djangoproject.com/en/3.0/releases/3.0/#django-utils-encoding-force-text-and-smart-text
+import sys
+if sys.version_info[0] >= 3:
+    from django.utils.encoding import force_str
+else:
+    from django.utils.encoding import force_text as force_str
 
 from . import url_tags
 
@@ -27,7 +39,7 @@ def anchorify(anchor):
 
     try:
         anchor = template.defaultfilters.striptags(anchor)
-        anchor = text.unescape_entities(anchor)
+        anchor = unescape(anchor)
         anchor = url_tags.slugify2(anchor)
         if not anchor or not anchor[0].isalpha():
             anchor = 'a' + anchor
@@ -77,7 +89,7 @@ def heading(context, level, content, classes=''):
 
     i = 0
     while anchor in top_render_context.setdefault('heading_anchors', {}):
-        anchor = base_anchor + "-" + encoding.force_text(i)
+        anchor = base_anchor + "-" + force_str(i)
         i += 1
     top_render_context['heading_anchors'][anchor] = True
 

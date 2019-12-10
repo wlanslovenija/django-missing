@@ -9,7 +9,14 @@ except ImportError:
     from django.core import urlresolvers as urls
 from django.conf import settings
 from django.template import defaultfilters
-from django.utils import encoding, html, safestring
+from django.utils import html, safestring
+# Remove this check when support for Python 2 is dropped.
+# https://docs.djangoproject.com/en/3.0/releases/3.0/#django-utils-encoding-force-text-and-smart-text
+import sys
+if sys.version_info[0] >= 3:
+    from django.utils.encoding import force_str
+else:
+    from django.utils.encoding import force_text as force_str
 
 register = template.Library()
 
@@ -152,8 +159,8 @@ class Downcoder(object):
 
         for lookup in ALL_DOWNCODE_MAPS:
             for c, l in lookup.items():
-                c = unicodedata.normalize('NFC', encoding.force_text(c))
-                l = encoding.force_text(l.encode('ascii', 'strict'), encoding='ascii')
+                c = unicodedata.normalize('NFC', force_str(c))
+                l = force_str(l.encode('ascii', 'strict'), encoding='ascii')
                 self.map[c] = l
                 chars += c
 
@@ -191,9 +198,9 @@ def slugify2(value):
     try:
         value = unicodedata.normalize('NFC', value)
         value = downcode(value)
-        value = encoding.force_text(unicodedata.normalize('NFD', value).encode('ascii', 'ignore'), encoding='ascii')
-        value = encoding.force_text(re.sub('[^\w\s-]', '', value).strip().lower())
-        value = re.sub('[-\s]+', '-', value)
+        value = force_str(unicodedata.normalize('NFD', value).encode('ascii', 'ignore'), encoding='ascii')
+        value = force_str(re.sub(r'[^\w\s-]', '', value).strip().lower())
+        value = re.sub(r'[-\s]+', '-', value)
         value = DASH_START_END_RE.sub('', value)
         return safestring.mark_safe(value)
     except:
@@ -241,12 +248,12 @@ def urltemplate_with_prefix(resolver, view, prefix, *args, **kwargs):
         if args:
             for i, param in enumerate(params):
                 if i < len(args):
-                    result = result.replace('%%(%s)s' % param, encoding.force_text(args[i]))
+                    result = result.replace('%%(%s)s' % param, force_str(args[i]))
                 else:
                     result = result.replace('%%(%s)s' % param, '{%s}' % unnamed_group_name(param))
         else:
             for param in params:
-                result = result.replace('%%(%s)s' % param, encoding.force_text(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
+                result = result.replace('%%(%s)s' % param, force_str(kwargs.get(param, '{%s}' % unnamed_group_name(param))))
 
         return prefix + result
 
@@ -371,7 +378,7 @@ def active_url(context, urls, class_name='active'):
         for url in urls:
             # To make sure we use resolved lazy instances,
             # otherwise there are sometimes errors
-            url = encoding.force_text(url)
+            url = force_str(url)
 
             if not url:
                 continue
