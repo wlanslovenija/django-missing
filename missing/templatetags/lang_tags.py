@@ -1,6 +1,13 @@
 from django import template
 from django.conf import settings
-from django.utils import encoding, translation
+from django.utils import translation
+# Remove this check when support for Python 2 is dropped.
+# https://docs.djangoproject.com/en/3.0/releases/3.0/#django-utils-encoding-force-text-and-smart-text
+import sys
+if sys.version_info[0] >= 3:
+    from django.utils.encoding import force_str
+else:
+    from django.utils.encoding import force_text as force_str
 
 register = template.Library()
 
@@ -20,7 +27,7 @@ def translate(string, lang_code):
     try:
         old_lang = translation.get_language()
         translation.activate(lang_code)
-        translated = encoding.force_text(translation.ugettext(string))
+        translated = force_str(translation.ugettext(string))
         translation.activate(old_lang)
         return translated
     except:

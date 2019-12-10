@@ -11,7 +11,14 @@ try:
 except ImportError:
     from django.core import urlresolvers as urls
 from django.test import client
-from django.utils import encoding, html
+from django.utils import html
+# Remove this check when support for Python 2 is dropped.
+# https://docs.djangoproject.com/en/3.0/releases/3.0/#django-utils-encoding-force-text-and-smart-text
+import sys
+if sys.version_info[0] >= 3:
+    from django.utils.encoding import force_str
+else:
+    from django.utils.encoding import force_text as force_str
 from django.views import debug
 
 
@@ -58,8 +65,8 @@ class ContextTagsTest(django_test.TestCase):
         o = t.render(c).strip()
 
         self.assertIn('variable', c)
-        self.assertEquals(c['variable'].strip(), 'FooBar')
-        self.assertEquals(o, '')
+        self.assertEqual(c['variable'].strip(), 'FooBar')
+        self.assertEqual(o, '')
 
     def test_contextblock_1(self):
         with self.assertRaises(template.TemplateSyntaxError) as cm:
@@ -237,7 +244,7 @@ class LangTagsTest(django_test.TestCase):
             {% translate "FooBar" %}
             """)
 
-        self.assertEquals("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
+        self.assertEqual("'translate' did not receive value(s) for the argument(s): 'lang_code'", str(cm.exception))
 
 
 class ListTagsTest(django_test.TestCase):
@@ -248,7 +255,7 @@ class ListTagsTest(django_test.TestCase):
             {{ objects|split_list }}
             """)
 
-        self.assertEquals('split_list requires 2 arguments, 1 provided', str(cm.exception))
+        self.assertEqual('split_list requires 2 arguments, 1 provided', str(cm.exception))
 
     def test_split_list_2(self):
         t = template.Template("""
@@ -260,7 +267,7 @@ class ListTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
 
-        self.assertEquals(o, '|4|4|2|')
+        self.assertEqual(o, '|4|4|2|')
 
     def test_split_list_3(self):
         t = template.Template("""
@@ -273,7 +280,7 @@ class ListTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
 
-        self.assertEquals(o, encoding.force_text(list(numbers[0:5])) + encoding.force_text(list(numbers[5:])))
+        self.assertEqual(o, force_str(list(numbers[0:5])) + force_str(list(numbers[5:])))
 
     def test_split_list_4(self):
         t = template.Template("""
@@ -286,7 +293,7 @@ class ListTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
 
-        self.assertEquals(o, '')
+        self.assertEqual(o, '')
 
     def test_split_list_5(self):
         t = template.Template("""
@@ -299,7 +306,7 @@ class ListTagsTest(django_test.TestCase):
         })
         o = t.render(c).strip()
 
-        self.assertEquals(o, '')
+        self.assertEqual(o, '')
 
 
 class StringTagsTest(django_test.TestCase):
@@ -310,7 +317,7 @@ class StringTagsTest(django_test.TestCase):
             {{ "FooBar"|ensure_sentence:"" }}
             """)
 
-        self.assertEquals('ensure_sentence requires 1 arguments, 2 provided', str(cm.exception))
+        self.assertEqual('ensure_sentence requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
@@ -322,7 +329,7 @@ class StringTagsTest(django_test.TestCase):
             'string': first,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, second)
+        self.assertEqual(o, second)
 
     def test_ensure_sentence_2(self):
         self._test_string('FooBar', 'FooBar.')
@@ -349,7 +356,7 @@ class UrlTagsTest(django_test.TestCase):
             {{ "FooBar"|slugify2:"" }}
             """)
 
-        self.assertEquals('slugify2 requires 1 arguments, 2 provided', str(cm.exception))
+        self.assertEqual('slugify2 requires 1 arguments, 2 provided', str(cm.exception))
 
     def _test_string(self, first, second):
         t = template.Template("""
@@ -361,7 +368,7 @@ class UrlTagsTest(django_test.TestCase):
             'string': first,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, second)
+        self.assertEqual(o, second)
 
     def test_slugify2_2(self):
         with self.settings(DEBUG=True):
@@ -388,7 +395,7 @@ class UrlTagsTest(django_test.TestCase):
             'url': url,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, request.build_absolute_uri(url))
+        self.assertEqual(o, request.build_absolute_uri(url))
 
     def test_fullurl_1(self):
         request = self.factory.get('/foo/')
@@ -402,7 +409,7 @@ class UrlTagsTest(django_test.TestCase):
             'request': request,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, request.build_absolute_uri())
+        self.assertEqual(o, request.build_absolute_uri())
 
     def test_fullurl_2(self):
         self._test_url(None)
@@ -425,7 +432,7 @@ class UrlTemplateTest(django_test.TestCase):
 
             c = template.Context()
             o = t.render(c).strip()
-            self.assertEquals(o, result)
+            self.assertEqual(o, result)
 
     def test_urltemplate_simply(self):
         self._test_urltemplate('"test1"', '/test1/')
@@ -512,7 +519,7 @@ class UrlTemplateTest(django_test.TestCase):
 
             c = template.Context()
             o = t.render(c).strip()
-            self.assertEquals(o, '/some/view/value/42/{param}/')
+            self.assertEqual(o, '/some/view/value/42/{param}/')
 
 
 @django_test.override_settings(ROOT_URLCONF='missing.tests.safereporting_urls')
@@ -551,7 +558,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h1 id="test" class="heading ">Test</h1>""")
+        self.assertEqual(o, """<h1 id="test" class="heading ">Test</h1>""")
 
     def test_heading_2(self):
         t = template.Template("""
@@ -562,7 +569,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+        self.assertEqual(o, """<h4 id="test" class="heading ">Test</h4>""")
 
     def test_heading_3(self):
         t = template.Template("""
@@ -572,7 +579,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h1 id="test" class="heading test">Test</h1>""")
+        self.assertEqual(o, """<h1 id="test" class="heading test">Test</h1>""")
 
     def test_heading_4(self):
         t = template.Template("""
@@ -582,7 +589,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h1 id="longer-test-with-spaces-and-various-characters" class="heading ">Longer test with spaces and various characters!?</h1>""")
+        self.assertEqual(o, """<h1 id="longer-test-with-spaces-and-various-characters" class="heading ">Longer test with spaces and various characters!?</h1>""")
 
     def test_heading_5(self):
         t = template.Template("""
@@ -592,7 +599,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h1 id="a12345" class="heading ">12345</h1>""")
+        self.assertEqual(o, """<h1 id="a12345" class="heading ">12345</h1>""")
 
     def test_heading_6(self):
         t = template.Template("""
@@ -603,7 +610,7 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = html.strip_spaces_between_tags(t.render(c).strip())
-        self.assertEquals(o, """<h1 id="test" class="heading ">Test</h1><h1 id="test-0" class="heading ">Test</h1>""")
+        self.assertEqual(o, """<h1 id="test" class="heading ">Test</h1><h1 id="test-0" class="heading ">Test</h1>""")
 
     def test_heading_7(self):
         t = template.Template("""
@@ -615,7 +622,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+        self.assertEqual(o, """<h4 id="test" class="heading ">Test</h4>""")
 
     def test_heading_8(self):
         t = template.Template("""
@@ -628,7 +635,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h3 id="test" class="heading ">Test</h3>""")
+        self.assertEqual(o, """<h3 id="test" class="heading ">Test</h3>""")
 
     def test_heading_9(self):
         t = template.Template("""
@@ -642,7 +649,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h3 id="test" class="heading ">Test</h3>""")
+        self.assertEqual(o, """<h3 id="test" class="heading ">Test</h3>""")
 
     def test_heading_10(self):
         t = template.Template("""
@@ -656,7 +663,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+        self.assertEqual(o, """<h4 id="test" class="heading ">Test</h4>""")
 
     def test_heading_11(self):
         t = template.Template("""
@@ -671,7 +678,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h4 id="test" class="heading ">Test</h4>""")
+        self.assertEqual(o, """<h4 id="test" class="heading ">Test</h4>""")
 
     def test_heading_12(self):
         t = template.Template("""
@@ -686,7 +693,7 @@ class HTMLTagsTest(django_test.TestCase):
             'base_heading_level': 3,
         })
         o = t.render(c).strip()
-        self.assertEquals(o, """<h5 id="test" class="heading ">Test</h5>""")
+        self.assertEqual(o, """<h5 id="test" class="heading ">Test</h5>""")
 
     def test_anchorify_example(self):
         t = template.Template("""
@@ -696,4 +703,4 @@ class HTMLTagsTest(django_test.TestCase):
 
         c = template.Context()
         o = t.render(c).strip()
-        self.assertEquals(o, """<h1 id="my-blog">My Blog</h1>""")
+        self.assertEqual(o, """<h1 id="my-blog">My Blog</h1>""")
